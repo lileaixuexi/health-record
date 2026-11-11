@@ -43,6 +43,7 @@ button,input{font-family:inherit}
   border-radius:var(--radius);
   padding:18px;
   box-shadow:0 2px 12px rgba(15,32,64,.05);
+  scroll-margin-top:132px;
 }
 
 /* ---------- 顶部 ---------- */
@@ -193,6 +194,43 @@ button,input{font-family:inherit}
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .foot{text-align:center;font-size:11px;color:#b6c0cd;padding:2px 0 6px}
+
+/* ---------- 记录日期 / 历史记录 ---------- */
+.datebar{position:sticky;top:8px;z-index:20}
+.date-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.date-row + .date-row{margin-top:8px}
+.date-input{
+  flex:1 1 140px;width:100%;min-width:0;padding:10px 12px;font-size:15px;color:var(--ink);
+  border:1px solid var(--line);border-radius:12px;background:#fbfcfe;
+}
+.date-input:focus{outline:none;border-color:#a9c9ff;background:#fff}
+.chip{
+  border:1px solid #dbe6fb;background:#f3f7ff;color:var(--blue-d);
+  font-size:13px;padding:9px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.chip:active{background:#e5eeff}
+.chip.grow{flex:1 1 0}
+.chip.ghost{background:#f7f9fc;color:var(--ink2);border-color:var(--line)}
+.chip[disabled]{opacity:.45;cursor:not-allowed}
+.rec-note{font-size:12px;color:var(--ink3);margin:9px 0 0;line-height:1.6}
+.rec-note b{color:var(--ink2);font-weight:600}
+.rec-note.left{text-align:left}
+.hsum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:2px 0 4px}
+.hsum div{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+.hsum label{display:block;font-size:11px;color:var(--ink3);margin-bottom:3px}
+.hsum b{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.25}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-top:1px solid var(--line)}
+.tl li:first-child{border-top:none}
+.tl .t{width:42px;flex:0 0 auto;font-size:13px;color:var(--ink3);font-variant-numeric:tabular-nums;padding-top:1px}
+.tl .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;margin-top:7px}
+.tl .ic{flex:0 0 auto;font-size:15px;line-height:1.5}
+.tl .d{flex:1;font-size:14px;min-width:0;line-height:1.5}
+.tl .d em{font-style:normal;color:var(--ink3);font-size:12px}
+.hist-empty{text-align:center;color:var(--ink3);font-size:14px;padding:24px 0 20px}
+.hist-empty span{display:block;font-size:30px;margin-bottom:8px}
+.hist-fill{margin-top:14px}
 </style>
 </head>
 <body>
@@ -210,6 +248,19 @@ button,input{font-family:inherit}
       </div>
     </div>
   </header>
+
+  <!-- 记录日期：决定新记录算到哪一天 -->
+  <section class="card datebar">
+    <div class="card-head">
+      <h2>📅 记录日期</h2>
+      <span class="tag" id="recDateTag">今天</span>
+    </div>
+    <div class="date-row">
+      <input type="date" class="date-input" id="recDate" aria-label="新记录记入的日期">
+      <button class="chip" id="recToday" type="button">回到今天</button>
+    </div>
+  </section>
+  <p class="rec-note left" id="recNote"></p>
 
   <!-- 饮水 -->
   <section class="card">
@@ -241,6 +292,7 @@ button,input{font-family:inherit}
       </div>
     </div>
     <button class="add-water" id="btnAddWater" type="button">＋ 250 ml</button>
+    <p class="rec-note" id="waterNote"></p>
     <ul class="rec" id="waterList"></ul>
   </section>
 
@@ -250,11 +302,29 @@ button,input{font-family:inherit}
       <h2>🏃 今日运动</h2>
       <span class="tag" id="exTag">尚未运动</span>
     </div>
+    <p class="rec-note left" id="exNote"></p>
     <div class="tabs" id="tabs"></div>
     <div id="panels"></div>
 
     <div class="sub-title">今日全部运动</div>
     <div id="exSummary"></div>
+  </section>
+
+  <!-- 历史记录 -->
+  <section class="card" id="histCard">
+    <div class="card-head">
+      <h2>📜 历史记录</h2>
+      <span class="tag" id="histDateTag">今天</span>
+    </div>
+    <div class="date-row">
+      <input type="date" class="date-input" id="histDate" aria-label="查看哪一天">
+    </div>
+    <div class="date-row">
+      <button class="chip grow" id="histPrev" type="button">‹ 前一天</button>
+      <button class="chip ghost grow" id="histToday" type="button">今天</button>
+      <button class="chip grow" id="histNext" type="button">后一天 ›</button>
+    </div>
+    <div id="histBody"></div>
   </section>
 
   <!-- 今日记录卡 -->
@@ -294,6 +364,7 @@ button,input{font-family:inherit}
   var CUP  = 250;           // 一次饮水 ml
   var KEY  = 'health-log-v1';
   var DEFAULT_NICK = '健康记录员';
+  var BJ_OFFSET = 8 * 60 * 60 * 1000;   // 北京时间相对 UTC 的偏移（日期一律按北京时间划分）
 
   // 运动项目：mode=km 记公里+分钟；mode=min 只记分钟
   var SPORTS = [
@@ -318,6 +389,8 @@ button,input{font-family:inherit}
     workouts: {}               // {跑步:[{id,date,ts,km,min}], ...}
   };
   var currentSport = SPORTS[0].key;
+  var recDate = todayStr();    // 新记录记入的日期（默认今天，可改为过去日期补填）
+  var viewDate = todayStr();   // 历史记录正在查看的日期
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -358,26 +431,64 @@ button,input{font-family:inherit}
     SPORTS.forEach(function (s, i) { state.colors[s.key] = pool[i % pool.length]; });
   }
 
-  /* ================= 日期 / 时间 ================= */
-  function todayStr(d) {
-    d = d || new Date();
-    var m = d.getMonth() + 1, day = d.getDate();
-    return d.getFullYear() + '-' + (m < 10 ? '0' + m : m) + '-' + (day < 10 ? '0' + day : day);
+  /* ================= 日期 / 时间（统一按北京时间 UTC+8 划分） ================= */
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+  // 当前时刻平移为北京时间，再用 UTC 取值，避免受本机时区影响
+  function bjNow() { return new Date(Date.now() + BJ_OFFSET); }
+
+  // 北京时间的今天，格式 YYYY-MM-DD
+  function todayStr() {
+    var b = bjNow();
+    return b.getUTCFullYear() + '-' + pad2(b.getUTCMonth() + 1) + '-' + pad2(b.getUTCDate());
   }
+  // 北京时间的此刻，格式 HH:MM
   function nowTime() {
-    var d = new Date(), h = d.getHours(), mi = d.getMinutes();
-    return (h < 10 ? '0' + h : h) + ':' + (mi < 10 ? '0' + mi : mi);
+    var b = bjNow();
+    return pad2(b.getUTCHours()) + ':' + pad2(b.getUTCMinutes());
   }
+  // 北京时间的今天，中文长日期
   function cnDate() {
-    var d = new Date();
-    var w = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()];
-    return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 星期' + w;
+    var b = bjNow();
+    var w = ['日', '一', '二', '三', '四', '五', '六'][b.getUTCDay()];
+    return b.getUTCFullYear() + '年' + (b.getUTCMonth() + 1) + '月' + b.getUTCDate() + '日 星期' + w;
   }
+  // 日期字符串加减天数（纯字符串运算，不受时区影响）
+  function shiftDate(d, days) {
+    var p = String(d).split('-');
+    var t = Date.UTC(+p[0], +p[1] - 1, +p[2]) + days * 86400000;
+    var dt = new Date(t);
+    return dt.getUTCFullYear() + '-' + pad2(dt.getUTCMonth() + 1) + '-' + pad2(dt.getUTCDate());
+  }
+  // 2026-11-05 → 2026年11月5日 星期四
+  function dateLabel(d) {
+    var p = String(d).split('-');
+    var w = ['日', '一', '二', '三', '四', '五', '六'][new Date(+p[0], +p[1] - 1, +p[2]).getDay()];
+    return (+p[0]) + '年' + (+p[1]) + '月' + (+p[2]) + '日 星期' + w;
+  }
+  // 2026-11-05 → 11月5日
+  function dateShort(d) {
+    var p = String(d).split('-');
+    return (+p[1]) + '月' + (+p[2]) + '日';
+  }
+  // 今天 / 昨天 / 空
+  function relDay(d) {
+    var t = todayStr();
+    if (d === t) return '今天';
+    if (d === shiftDate(t, -1)) return '昨天';
+    return '';
+  }
+  function isDateStr(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s); }
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
   /* ================= 工具 ================= */
   function todayWater() { return state.water.filter(function (r) { return r.date === todayStr(); }); }
   function todayWorkouts(key) { return (state.workouts[key] || []).filter(function (r) { return r.date === todayStr(); }); }
+  // 指定某一天的记录
+  function waterOn(d) { return state.water.filter(function (r) { return r.date === d; }); }
+  function workoutsOn(d, key) { return (state.workouts[key] || []).filter(function (r) { return r.date === d; }); }
+  // 早期没有日期字段的旧记录：原样保留，单列出来，不丢数量
+  function undatedWater() { return state.water.filter(function (r) { return !isDateStr(r.date); }); }
+  function undatedWorkouts(key) { return (state.workouts[key] || []).filter(function (r) { return !isDateStr(r.date); }); }
   function sportOf(key) { for (var i = 0; i < SPORTS.length; i++) if (SPORTS[i].key === key) return SPORTS[i]; return SPORTS[0]; }
   function colorOf(key) { return state.colors[key] || '#2f7ef7'; }
 
@@ -754,6 +865,130 @@ button,input{font-family:inherit}
     $('cardImg').src = cardDataUrl;
   }
 
+  /* ================= 渲染：记录日期 ================= */
+  function renderRecDate() {
+    var t = todayStr();
+    $('recDate').value = recDate;
+    $('recDate').max = t;
+    var rel = relDay(recDate);
+    $('recDateTag').textContent = rel || dateShort(recDate);
+    if (recDate === t) {
+      $('recNote').innerHTML = '新记录会计入 <b>' + dateLabel(recDate) + '（今天）</b>。想补填过去的日子，把上面的日期改成那一天即可，补填的记录<b>不会算进今天</b>。';
+    } else {
+      $('recNote').innerHTML = '正在补填：新记录会记入 <b>' + dateLabel(recDate) + '</b>，<b>不会算进今天</b>。';
+    }
+    var short = recDate === t
+      ? '记入 ' + dateLabel(recDate) + '（今天）'
+      : '补记到 ' + dateLabel(recDate) + '，不计入今天';
+    $('waterNote').textContent = short;
+    $('exNote').textContent = short;
+  }
+
+  /* ================= 渲染：历史记录 ================= */
+  function timelineHtml(water, exs) {
+    var items = [];
+    water.forEach(function (r) { items.push({ ts: r.ts || '', kind: 'w', r: r }); });
+    exs.forEach(function (e) {
+      e.recs.forEach(function (r) { items.push({ ts: r.ts || '', kind: 'e', s: e.s, r: r }); });
+    });
+    items.sort(function (a, b) { return String(a.ts).localeCompare(String(b.ts)); });
+    if (!items.length) return '<div class="empty">暂无记录</div>';
+    return '<ul class="tl">' + items.map(function (it) {
+      if (it.kind === 'w') {
+        return '<li>' +
+          '<span class="t">' + esc(it.ts) + '</span>' +
+          '<span class="ic">💧</span>' +
+          '<span class="d">饮水 ' + fmtNum(it.r.ml) + ' ml</span>' +
+          '<button class="undo" type="button" data-water="' + esc(it.r.id) + '" aria-label="撤销这条记录">×</button>' +
+          '</li>';
+      }
+      var s = it.s;
+      var detail = s.mode === 'km'
+        ? fmtNum(it.r.km) + ' 公里 · ' + fmtNum(it.r.min) + ' 分钟'
+        : fmtNum(it.r.min) + ' 分钟';
+      if (s.key === '跑步' && +it.r.km > 0) detail += ' · 配速 ' + fmtPace(+it.r.min, +it.r.km);
+      return '<li>' +
+        '<span class="t">' + esc(it.ts) + '</span>' +
+        '<span class="dot" style="background:' + colorOf(s.key) + '"></span>' +
+        '<span class="d">' + s.emoji + ' ' + esc(s.key) + ' · ' + esc(detail) + '</span>' +
+        '<button class="undo" type="button" data-workout="' + esc(s.key) + '" data-id="' + esc(it.r.id) + '" aria-label="撤销这条记录">×</button>' +
+        '</li>';
+    }).join('') + '</ul>';
+  }
+
+  function renderHistory() {
+    var d = viewDate;
+    var t = todayStr();
+    $('histDate').value = d;
+    $('histDate').max = t;
+    var rel = relDay(d);
+    $('histDateTag').textContent = rel ? (rel + ' · ' + dateShort(d)) : dateShort(d);
+    $('histNext').disabled = (d >= t);
+
+    var water = waterOn(d);
+    var exs = [];
+    SPORTS.forEach(function (s) {
+      var recs = workoutsOn(d, s.key);
+      if (recs.length) exs.push({ s: s, recs: recs });
+    });
+
+    var html = '';
+
+    if (!water.length && !exs.length) {
+      html += '<div class="hist-empty"><span>🗓️</span>暂无记录</div>';
+    } else {
+      var totalMl = 0, exCount = 0, totalMin = 0;
+      water.forEach(function (r) { totalMl += (+r.ml || 0); });
+      exs.forEach(function (e) {
+        exCount += e.recs.length;
+        e.recs.forEach(function (r) { totalMin += (+r.min || 0); });
+      });
+      html += '<div class="hsum">' +
+        '<div><label>饮水合计</label><b>' + fmtNum(totalMl) + ' ml</b></div>' +
+        '<div><label>饮水次数</label><b>' + water.length + ' 次</b></div>' +
+        '<div><label>运动合计</label><b>' + exCount + ' 次</b></div>' +
+        '<div><label>运动时长</label><b>' + fmtNum(totalMin) + ' 分钟</b></div>' +
+        '</div>';
+
+      if (exs.length) {
+        html += '<div class="sub-title">当日运动</div>';
+        html += exs.map(function (e) {
+          var km = 0, min = 0;
+          e.recs.forEach(function (r) { km += (+r.km || 0); min += (+r.min || 0); });
+          var val = e.s.mode === 'km'
+            ? fmtNum(km) + ' 公里 · ' + fmtNum(min) + ' 分钟'
+            : fmtNum(min) + ' 分钟';
+          return '<div class="sum-row">' +
+            '<span class="dot" style="background:' + colorOf(e.s.key) + '"></span>' +
+            '<span class="nm">' + e.s.emoji + ' ' + esc(e.s.key) + '</span>' +
+            '<span class="vv">' + esc(val) + ' · ' + e.recs.length + ' 次</span>' +
+          '</div>';
+        }).join('');
+      }
+
+      html += '<div class="sub-title">每次记录</div>';
+      html += timelineHtml(water, exs);
+    }
+
+    // 早期没有日期的旧记录：原样保留，单列出来，不丢数量
+    var uw = undatedWater(), ue = [];
+    SPORTS.forEach(function (s) {
+      var recs = undatedWorkouts(s.key);
+      if (recs.length) ue.push({ s: s, recs: recs });
+    });
+    if (uw.length || ue.length) {
+      html += '<div class="sub-title">未指定日期的旧记录</div>';
+      html += timelineHtml(uw, ue);
+    }
+
+    // 补填入口：把「记录日期」切到正在看的这一天
+    if (d !== t) {
+      html += '<div class="hist-fill"><button class="chip" type="button" data-fill="' + d + '">＋ 补记到 ' + dateLabel(d) + '</button></div>';
+    }
+
+    $('histBody').innerHTML = html;
+  }
+
   /* ================= 总渲染 ================= */
   function render() {
     renderTop();
@@ -761,14 +996,16 @@ button,input{font-family:inherit}
     renderTabs();
     renderPanels();
     renderExSummary();
+    renderRecDate();
+    renderHistory();
     buildCard();
   }
 
   /* ================= 事件 ================= */
   $('btnAddWater').addEventListener('click', function () {
-    state.water.push({ id: uid(), date: todayStr(), ts: nowTime(), ml: CUP });
+    state.water.push({ id: uid(), date: recDate, ts: nowTime(), ml: CUP });
     save(); render();
-    toast('已记录 250 ml');
+    toast(recDate === todayStr() ? '已记录 250 ml' : ('已补记 250 ml 到 ' + dateShort(recDate)));
   });
 
   $('tabs').addEventListener('click', function (e) {
@@ -797,9 +1034,11 @@ button,input{font-family:inherit}
         if (!isFinite(min) || min <= 0) { toast('请填写时长（分钟）'); minEl.focus(); return; }
         km = 0;
       }
-      state.workouts[key].push({ id: uid(), date: todayStr(), ts: nowTime(), km: km, min: min });
+      state.workouts[key].push({ id: uid(), date: recDate, ts: nowTime(), km: km, min: min });
       save(); render();
-      toast('已记录 ' + key + ' ' + fmtNum(min) + ' 分钟');
+      toast(recDate === todayStr()
+        ? ('已记录 ' + key + ' ' + fmtNum(min) + ' 分钟')
+        : ('已补记 ' + key + ' ' + fmtNum(min) + ' 分钟到 ' + dateShort(recDate)));
       return;
     }
 
@@ -825,6 +1064,64 @@ button,input{font-family:inherit}
     if (wu) {
       var wid = wu.getAttribute('data-water');
       state.water = state.water.filter(function (r) { return r.id !== wid; });
+      save(); render();
+      toast('已撤销该条记录');
+    }
+  });
+
+  /* ---------- 记录日期：新记录记到哪一天 ---------- */
+  $('recDate').addEventListener('change', function () {
+    var v = this.value, t = todayStr();
+    if (!isDateStr(v)) { recDate = t; renderRecDate(); return; }
+    if (v > t) { recDate = t; renderRecDate(); toast('不能记到未来的日期'); return; }
+    recDate = v;
+    renderRecDate();
+    toast('新记录将记入 ' + dateLabel(v));
+  });
+  $('recToday').addEventListener('click', function () {
+    recDate = todayStr();
+    renderRecDate();
+    toast('已切回今天');
+  });
+
+  /* ---------- 历史记录：查看某一天 ---------- */
+  $('histDate').addEventListener('change', function () {
+    var v = this.value, t = todayStr();
+    if (!isDateStr(v)) { viewDate = t; renderHistory(); return; }
+    if (v > t) { viewDate = t; renderHistory(); toast('不能查看未来的日期'); return; }
+    viewDate = v;
+    renderHistory();
+  });
+  $('histPrev').addEventListener('click', function () {
+    viewDate = shiftDate(viewDate, -1);
+    renderHistory();
+  });
+  $('histNext').addEventListener('click', function () {
+    var n = shiftDate(viewDate, 1);
+    if (n > todayStr()) return;
+    viewDate = n;
+    renderHistory();
+  });
+  $('histToday').addEventListener('click', function () {
+    viewDate = todayStr();
+    renderHistory();
+  });
+  $('histBody').addEventListener('click', function (e) {
+    var fill = e.target.closest('[data-fill]');
+    if (fill) {
+      recDate = fill.getAttribute('data-fill');
+      renderRecDate();
+      toast('记录日期已切到 ' + dateLabel(recDate) + '，新记录会记到该日');
+      var bar = document.querySelector('.datebar');
+      if (bar && bar.scrollIntoView) bar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    var wo = e.target.closest('[data-workout]');
+    if (wo) {
+      var k = wo.getAttribute('data-workout');
+      var id = wo.getAttribute('data-id');
+      if (!state.workouts[k]) return;
+      state.workouts[k] = state.workouts[k].filter(function (r) { return r.id !== id; });
       save(); render();
       toast('已撤销该条记录');
     }
@@ -867,7 +1164,12 @@ button,input{font-family:inherit}
   var lastDay = todayStr();
   function checkDay() {
     var d = todayStr();
-    if (d !== lastDay) { lastDay = d; render(); }
+    if (d === lastDay) return;
+    var oldDay = lastDay;
+    lastDay = d;
+    if (recDate === oldDay) recDate = d;    // 默认记录日期跟随新的一天
+    if (viewDate === oldDay) viewDate = d;  // 正在看的那天若是昨天，自动跟随
+    render();
   }
   setInterval(checkDay, 30000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) checkDay(); });
