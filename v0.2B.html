@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4f6f9">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E">
+<title>我的健康记录 · v0.2B</title>
+<style>
+:root{
+  --bg:#f4f6f9;
+  --card:#ffffff;
+  --ink:#1f2937;
+  --ink2:#64748b;
+  --ink3:#9aa6b6;
+  --blue:#2f7ef7;
+  --blue-d:#1a63e0;
+  --blue-l:#eaf2ff;
+  --line:#eef1f6;
+  --radius:18px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",sans-serif;
+  font-size:15px;line-height:1.55;
+  -webkit-text-size-adjust:100%;
+}
+button,input{font-family:inherit}
+.page{
+  max-width:520px;margin:0 auto;
+  padding:16px 14px calc(44px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;gap:14px;
+}
+.card{
+  background:var(--card);
+  border:1px solid rgba(15,32,64,.04);
+  border-radius:var(--radius);
+  padding:18px;
+  box-shadow:0 2px 12px rgba(15,32,64,.05);
+  scroll-margin-top:132px;
+}
+
+/* ---------- 顶部 ---------- */
+.topbar{display:flex;align-items:center;gap:14px;padding:16px 18px}
+.avatar{
+  width:52px;height:52px;flex:0 0 auto;border-radius:50%;
+  background:linear-gradient(145deg,#e8f2ff,#d6e8ff);
+  display:flex;align-items:center;justify-content:center;
+  font-size:27px;line-height:1;
+  box-shadow:inset 0 0 0 1px rgba(47,126,247,.12);
+}
+.topinfo{min-width:0;flex:1}
+.brand{margin:0;font-size:19px;font-weight:700;letter-spacing:.5px}
+.namerow{display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap}
+.nick{font-size:14px;color:var(--ink2)}
+.ver{
+  font-size:11px;color:var(--ink3);background:#f5f7fa;border:1px solid var(--line);
+  border-radius:999px;padding:1px 8px;letter-spacing:.4px;white-space:nowrap;
+}
+.edit-btn{
+  border:1px solid #dbe6fb;background:#f3f7ff;color:var(--blue-d);
+  font-size:12px;padding:3px 10px;border-radius:999px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:3px;
+}
+.edit-btn:active{background:#e5eeff}
+
+/* ---------- 通用 ---------- */
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.card-head h2{margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px}
+.tag{font-size:12px;color:var(--ink3);background:#f5f7fa;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.hint{font-size:12px;color:var(--ink3);margin:10px 0 0;text-align:center}
+
+/* ---------- 练习版提示 ---------- */
+.notice{
+  margin:0;background:#fff8ec;border:1px solid #fde3b4;color:#8a5a00;
+  font-size:12px;line-height:1.7;border-radius:12px;padding:9px 12px;
+}
+
+/* ---------- 饮水 ---------- */
+.water-body{display:flex;align-items:center;gap:18px}
+.ring-wrap{position:relative;width:132px;height:132px;flex:0 0 auto}
+.ring{width:132px;height:132px;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:#eaf0fb;stroke-width:13}
+.ring-fg{
+  fill:none;stroke:var(--blue);stroke-width:13;stroke-linecap:round;
+  transition:stroke-dashoffset .5s cubic-bezier(.4,0,.2,1);
+  filter:drop-shadow(0 2px 5px rgba(47,126,247,.3));
+}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15}
+.ring-center b{font-size:29px;font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums}
+.ring-center span{font-size:12px;color:var(--ink3);margin-top:1px}
+.ring-center i{font-style:normal;font-size:11px;color:var(--ink3);margin-top:5px}
+.water-stats{flex:1;display:flex;flex-direction:column;gap:12px}
+.stat b{display:block;font-size:26px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-ns}
+.stat span{font-size:12px;color:var(--ink3)}
+.stat.pct b{color:var(--blue)}
+.stat.left b{color:var(--ink)}
+.stat.done b{color:#22a06b}
+.add-water{
+  width:100%;margin-top:16px;border:0;cursor:pointer;
+  border-radius:14px;padding:15px;
+  background:linear-gradient(135deg,#3d8bff,#1f6fe5);
+  color:#fff;font-size:17px;font-weight:700;letter-spacing:.5px;
+  box-shadow:0 6px 16px rgba(47,126,247,.3);
+}
+.add-water:active{transform:translateY(1px);box-shadow:0 3px 10px rgba(47,126,247,.3)}
+
+/* ---------- 记录列表 ---------- */
+.rec{list-style:none;margin:0;padding:0}
+.rec li{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.rec li:first-child{border-top:none}
+.rec .t{width:44px;flex:0 0 auto;font-size:13px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.rec .d{flex:1;font-size:14px;min-width:0}
+.rec .d em{font-style:normal;color:var(--ink3);font-size:12px}
+.undo{
+  border:0;padding:0;cursor:pointer;background:#f1f5f9;color:#94a3b8;
+  width:30px;height:30px;border-radius:50%;font-size:18px;line-height:1;
+  flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;
+}
+.undo:active{background:#fee2e2;color:#e0523c}
+.empty{text-align:center;color:var(--ink3);font-size:13px;padding:16px 0 6px}
+
+/* ---------- 运动 ---------- */
+.tabs{display:flex;gap:6px;padding:2px 0 8px}
+.tab{
+  flex:1 1 0;min-width:0;white-space:nowrap;cursor:pointer;
+  border:1px solid var(--line);background:#f7f9fc;color:var(--ink2);
+  padding:8px 4px;border-radius:999px;font-size:14px;
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+}
+.tab .dot{flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:#cbd5e1}
+.tab.active{color:#fff;border-color:transparent;font-weight:600}
+.tab.active .dot{background:rgba(255,255,255,.85)}
+.ex-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:4px 0 12px}
+.ex-head .name{font-size:16px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+.ex-head .name .dot{width:10px;height:10px;border-radius:50%}
+.ex-head .sum{font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.pace-box{display:flex;gap:10px;margin-bottom:12px}
+.pace-box div{flex:1;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:9px 11px}
+.pace-box label{display:block;font-size:11px;color:var(--ink3);margin-bottom:2px}
+.pace-box b{font-size:16px;font-variant-numeric:tabular-nums}
+.ex-form{display:flex;gap:8px;align-items:flex-end;margin-bottom:2px}
+.field{flex:1;min-width:0}
+.field label{display:block;font-size:12px;color:var(--ink3);margin-bottom:5px}
+.field input{
+  width:100%;padding:11px 12px;font-size:16px;color:var(--ink);
+  border:1px solid var(--line);border-radius:12px;background:#fbfcfe;
+}
+.field input:focus{outline:none;border-color:#a9c9ff;background:#fff}
+.btn-sub{
+  flex:0 0 auto;border:0;cursor:pointer;border-radius:12px;padding:12px 18px;
+  color:#fff;font-size:15px;font-weight:600;
+}
+.btn-sub:active{opacity:.85}
+.form-err{font-size:12px;color:#e0513c;margin:8px 0 0;min-height:0}
+.sub-title{font-size:13px;font-weight:600;color:var(--ink2);margin:20px 0 2px;padding-top:16px;border-top:1px solid var(--line)}
+.sum-row{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--line)}
+.sum-row .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+.sum-row .nm{font-size:14px;font-weight:600;width:52px;flex:0 0 auto}
+.sum-row .vv{font-size:13px;color:var(--ink2);flex:1;font-variant-numeric:tabular-nums}
+
+/* ---------- 记录卡 ---------- */
+.card-img{
+  display:block;width:100%;height:auto;border-radius:14px;
+  box-shadow:0 6px 20px rgba(15,32,64,.12);background:#fff;
+}
+.btn-save{
+  width:100%;margin-top:14px;border:0;cursor:pointer;border-radius:14px;padding:14px;
+  background:#1f2937;color:#fff;font-size:16px;font-weight:600;
+  box-shadow:0 5px 14px rgba(31,41,55,.22);
+}
+.btn-save:active{transform:translateY(1px)}
+
+/* ---------- 弹窗 ---------- */
+.mask{
+  position:fixed;inset:0;background:rgba(15,23,42,.45);
+  display:flex;align-items:center;justify-content:center;padding:24px;z-index:50;
+}
+.mask[hidden]{display:none}
+.modal{background:#fff;border-radius:18px;padding:20px;width:100%;max-width:340px;box-shadow:0 12px 40px rgba(0,0,0,.2)}
+.modal h3{margin:0 0 14px;font-size:16px}
+.modal input{
+  width:100%;padding:12px;font-size:16px;border:1px solid var(--line);
+  border-radius:12px;background:#fbfcfe;color:var(--ink);
+}
+.modal input:focus{outline:none;border-color:#a9c9ff;background:#fff}
+.modal-btns{display:flex;gap:10px;margin-top:16px}
+.modal-btns button{flex:1;border:0;border-radius:12px;padding:12px;font-size:15px;cursor:pointer}
+.btn-cancel{background:#f1f5f9;color:var(--ink2)}
+.btn-ok{background:var(--blue);color:#fff;font-weight:600}
+
+/* ---------- 提示 ---------- */
+.toast{
+  position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(12px);
+  background:rgba(31,41,55,.92);color:#fff;font-size:13px;
+  padding:9px 16px;border-radius:999px;opacity:0;pointer-events:none;
+  transition:.25s;z-index:60;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.foot{text-align:center;font-size:11px;color:#b6c0cd;padding:2px 0 6px}
+
+/* ---------- 记录日期 / 历史记录 ---------- */
+.datebar{position:sticky;top:8px;z-index:20}
+.date-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.date-row + .date-row{margin-top:8px}
+.date-input{
+  flex:1 1 140px;width:100%;min-width:0;padding:10px 12px;font-size:15px;color:var(--ink);
+  border:1px solid var(--line);border-radius:12px;background:#fbfcfe;
+}
+.date-input:focus{outline:none;border-color:#a9c9ff;background:#fff}
+.chip{
+  border:1px solid #dbe6fb;background:#f3f7ff;color:var(--blue-d);
+  font-size:13px;padding:9px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.chip:active{background:#e5eeff}
+.chip.grow{flex:1 1 0}
+.chip.ghost{background:#f7f9fc;color:var(--ink2);border-color:var(--line)}
+.chip[disabled]{opacity:.45;cursor:not-allowed}
+.rec-note{font-size:12px;color:var(--ink3);margin:9px 0 0;line-height:1.6}
+.rec-note b{color:var(--ink2);font-weight:600}
+.rec-note.left{text-align:left}
+.rec-note.err{color:#e0513c}
+.rec-note.ok{color:#1d7a4d}
+.hsum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:2px 0 4px}
+.hsum div{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+.hsum label{display:block;font-size:11px;color:var(--ink3);margin-bottom:3px}
+.hsum b{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.25}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-top:1px solid var(--line)}
+.tl li:first-child{border-top:none}
+.tl .t{width:42px;flex:0 0 auto;font-size:13px;color:var(--ink3);font-variant-numeric:tabular-nums;padding-top:1px}
+.tl .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;margin-top:7px}
+.tl .ic{flex:0 0 auto;font-size:15px;line-height:1.5}
+.tl .d{flex:1;font-size:14px;min-width:0;line-height:1.5}
+.tl .d em{font-style:normal;color:var(--ink3);font-size:12px}
+.hist-empty{text-align:center;color:var(--ink3);font-size:14px;padding:24px 0 20px}
+.hist-empty span{display:block;font-size:30px;margin-bottom:8px}
+.hist-fill{margin-top:14px}
+
+/* ---------- 云端同步 ---------- */
+.code-input{
+  flex:1 1 150px;width:100%;min-width:0;padding:10px 12px;font-size:14px;color:var(--ink);
+  border:1px solid var(--line);border-radius:12px;background:#fbfcfe;
+  letter-spacing:.5px;
+}
+.code-input:focus{outline:none;border-color:#a9c9ff;background:#fff}
+.sync-box{
+  background:#f8fafc;border:1px solid var(--line);border-radius:14px;
+  padding:12px;margin-bottom:12px;
+}
+.sync-box .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sync-box .row + .row{margin-top:8px}
+.sync-box label{display:block;font-size:11px;color:var(--ink3);margin-bottom:4px}
+/* 记录集编号：一眼看出「这台在用哪一份记录」 */
+.setid-box{
+  background:var(--blue-l);border:1px solid #d3e3ff;border-radius:14px;
+  padding:10px 12px;margin:0 0 10px;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;
+}
+.setid-label{font-size:11px;color:var(--blue-d)}
+.setid-val{font-size:19px;font-weight:800;letter-spacing:1px;color:var(--blue-d);font-variant-numeric:tabular-nums}
+.setid-val.off{font-size:13px;font-weight:600;letter-spacing:0;color:var(--ink3)}
+.setid-hint{font-size:11px;color:var(--blue-d);opacity:.85;flex:1 1 100%;line-height:1.55}
+/* 记录条目上的「还没存上云端」标记 */
+.pend{font-size:10px;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:1px 7px;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- 顶部：头像 + 昵称 -->
+  <header class="card topbar">
+    <div class="avatar">🌱</div>
+    <div class="topinfo">
+      <h1 class="brand">我的健康记录</h1>
+      <div class="namerow">
+        <span class="nick" id="nickText">健康记录员</span>
+        <button class="edit-btn" id="btnEditNick" type="button">✎ 编辑</button>
+        <span class="ver">v0.2B</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 练习版提示 -->
+  <p class="notice" id="notice">练习版本：暂时没有登录功能，请勿录入真实健康信息或分享链接</p>
+
+  <!-- 记录日期：决定新记录算到哪一天 -->
+  <section class="card datebar">
+    <div class="card-head">
+      <h2>📅 记录日期</h2>
+      <span class="tag" id="recDateTag">今天</span>
+    </div>
+    <div class="date-row">
+      <input type="date" class="date-input" id="recDate" aria-label="新记录记入的日期">
+      <button class="chip" id="recToday" type="button">回到今天</button>
+    </div>
+  </section>
+  <p class="rec-note left" id="recNote"></p>
+
+  <!-- 饮水 -->
+  <section class="card">
+    <div class="card-head">
+      <h2>💧 今日饮水</h2>
+      <span class="tag">目标 2000 ml</span>
+    </div>
+    <div class="water-body">
+      <div class="ring-wrap">
+        <svg class="ring" viewBox="0 0 140 140" aria-hidden="true">
+          <circle class="ring-bg" cx="70" cy="70" r="58"></circle>
+          <circle class="ring-fg" id="ringFg" cx="70" cy="70" r="58"></circle>
+        </svg>
+        <div class="ring-center">
+          <b id="waterTotal">0</b>
+          <span>毫升</span>
+          <i id="waterCups">0 / 8 杯</i>
+        </div>
+      </div>
+      <div class="water-stats">
+        <div class="stat pct">
+          <b id="waterPct">0%</b>
+          <span>完成百分比</span>
+        </div>
+        <div class="stat left" id="waterLeftBox">
+          <b id="waterLeft">2000</b>
+          <span id="waterLeftLabel">还差 (毫升)</span>
+        </div>
+      </div>
+    </div>
+    <button class="add-water" id="btnAddWater" type="button">＋ 250 ml</button>
+    <p class="rec-note" id="waterNote"></p>
+    <ul class="rec" id="waterList"></ul>
+  </section>
+
+  <!-- 运动 -->
+  <section class="card">
+    <div class="card-head">
+      <h2>🏃 今日运动</h2>
+      <span class="tag" id="exTag">尚未运动</span>
+    </div>
+    <p class="rec-note left" id="exNote"></p>
+    <div class="tabs" id="tabs"></div>
+    <div id="panels"></div>
+
+    <div class="sub-title">今日全部运动</div>
+    <div id="exSummary"></div>
+  </section>
+
+  <!-- 历史记录 -->
+  <section class="card" id="histCard">
+    <div class="card-head">
+      <h2>📜 历史记录</h2>
+      <span class="tag" id="histDateTag">今天</span>
+    </div>
+    <div class="date-row">
+      <input type="date" class="date-input" id="histDate" aria-label="查看哪一天">
+    </div>
+    <div class="date-row">
+      <button class="chip grow" id="histPrev" type="button">‹ 前一天</button>
+      <button class="chip ghost grow" id="histToday" type="button">今天</button>
+      <button class="chip grow" id="histNext" type="button">后一天 ›</button>
+    </div>
+    <div id="histBody"></div>
+  </section>
+
+  <!-- 云端同步 -->
+  <section class="card" id="syncCard">
+    <div class="card-head">
+      <h2>☁️ 云端同步</h2>
+      <span class="tag" id="syncTag">未连接</span>
+    </div>
+    <p class="rec-note left" id="syncNote">电脑和手机填入<b>同一串同步码</b>，就是同一份记录：一台新增 / 改昵称 / 撤销，另一台点「刷新记录」就能看到。<b>只填同一个网址是不够的</b>——网址相同但同步码不同，就是两份互不可见的记录。同步码等同密码，<b>不要分享给别人</b>。</p>
+
+    <div class="setid-box">
+      <span class="setid-label">记录集编号</span>
+      <b class="setid-val off" id="syncSetId">未设置</b>
+      <span class="setid-hint">填入同步码后，这里显示它对应的编号。<b>两台设备编号一致</b>才是同一份记录；不一致就是两份数据，谁也看不到谁。</span>
+    </div>
+
+    <div class="sync-box">
+      <div class="row">
+        <div class="field" style="flex:1 1 100%">
+          <label for="syncApi">云端服务地址</label>
+          <input type="text" class="code-input" id="syncApi" placeholder="http://公网IP:8000 或 https://你的域名" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field" style="flex:1 1 100%">
+          <label for="syncCode">同步码</label>
+          <input type="password" class="code-input" id="syncCode" placeholder="点「生成」创建，或粘贴另一台同步码" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="row">
+        <button class="chip grow" id="btnGenCode" type="button">生成同步码</button>
+        <button class="chip grow ghost" id="btnCopyCode" type="button">复制同步码</button>
+        <button class="chip grow ghost" id="btnShowCode" type="button">显示</button>
+      </div>
+      <div class="row">
+        <button class="chip grow" id="btnConnect" type="button">连接云端</button>
+        <button class="chip grow" id="btnRefresh" type="button">刷新记录</button>
+      </div>
+      <div class="row">
+        <button class="chip grow ghost" id="btnPush" type="button">立即同步</button>
+        <button class="chip grow ghost" id="btnDisconnect" type="button">断开连接</button>
+      </div>
+    </div>
+
+    <p class="rec-note left" id="syncStatus">未连接云端：记录只保存在本机浏览器。</p>
+  </section>
+
+  <!-- 今日记录卡 -->
+  <section class="card">
+    <div class="card-head">
+      <h2>🖼️ 今日记录卡</h2>
+      <span class="tag" id="cardDate"></span>
+    </div>
+    <img class="card-img" id="cardImg" alt="今日记录卡预览">
+    <button class="btn-save" id="btnSaveImg" type="button">保存图片</button>
+    <p class="hint">手机上也可以长按上方图片保存到相册</p>
+  </section>
+
+  <div class="foot">v0.2B 练习版 · 记录保存在本机浏览器，连接云端后可在电脑与手机之间同步</div>
+</div>
+
+<!-- 昵称编辑弹窗 -->
+<div class="mask" id="mask" hidden>
+  <div class="modal">
+    <h3>修改昵称</h3>
+    <input id="nickInput" type="text" maxlength="16" placeholder="请输入昵称" autocomplete="off">
+    <div class="modal-btns">
+      <button class="btn-cancel" id="btnCancelNick" type="button">取消</button>
+      <button class="btn-ok" id="btnSaveNick" type="button">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ================= 常量 ================= */
+  var GOAL = 2000;              // 饮水目标 ml
+  var CUP  = 250;               // 一次饮水 ml
+  var KEY  = 'health-log-v2';   // v0.2B 独立存储键（与 v0.2A 的 health-log-v1 完全隔离）
+  var SYNC_CFG_KEY = 'health-sync-v2';  // 同步配置（服务地址 + 同步码）单独存放
+  var DEFAULT_NICK = '健康记录员';
+  var BJ_OFFSET = 8 * 60 * 60 * 1000;   // 北京时间相对 UTC 的偏移（日期一律按北京时间划分）
+  var CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';  // 去掉容易看错的 I O 0 1
+
+  // 运动项目：mode=km 记公里+分钟；mode=min 只记分钟
+  var SPORTS = [
+    { key: '跑步', emoji: '🏃', mode: 'km'  },
+    { key: '散步', emoji: '🚶', mode: 'km'  },
+    { key: '骑行', emoji: '🚴', mode: 'km'  },
+    { key: '拉伸', emoji: '🤸', mode: 'min' },
+    { key: '瑜伽', emoji: '🧘', mode: 'min' }
+  ];
+
+  // 随机分配的运动配色池（互不相同，同一项目恒定）
+  var PALETTE = ['#ef7a45', '#22a06b', '#7c5cf0', '#0ea5b7', '#e0518a'];
+
+  var EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Twemoji Mozilla",sans-serif';
+  var CJK_FONT   = '-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif';
+
+  /* ================= 状态 ================= */
+  var state = {
+    nickname: DEFAULT_NICK,
+    colors: {},
+    water: [],                 // {id,date,ts,ml,u,dirty}
+    workouts: {},              // {跑步:[{id,date,ts,km,min,u,dirty}], ...}
+    meta: {
+      nick:   { v: '',   u: 0, dirty: 0 },   // 昵称（参与同步）
+      colors: { v: null, u: 0, dirty: 0 }    // 配色（只发布一次，之后以云端为准）
+    },
+    tomb: []                   // 撤销墓碑 [{id,u,dirty}]，用于让另一台设备也删掉这条
+  };
+  var currentSport = SPORTS[0].key;
+  var recDate = todayStr();    // 新记录记入的日期（默认今天，可改为过去日期补填）
+  var viewDate = todayStr();   // 历史记录正在查看的日期
+
+  var sync = {
+    api: '',                   // 云端服务地址
+    code: '',                  // 同步码（明文只留在本机；服务端只存它的 SHA-256）
+    key: '',                   // sha256(同步码)，作为云端分组键
+    setId: '',                 // 记录集编号（同步码派生的短指纹）：用来判断两台是不是同一份记录
+    connected: false,
+    lastSeq: 0,                // 增量拉取游标（服务端自增序号，不依赖设备时钟）
+    maxRows: 200,              // 服务端单次推送上限（连接时按服务端声明更新）
+    lastErr: ''
+  };
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ================= 存储 ================= */
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var p = JSON.parse(raw);
+        if (p && typeof p === 'object') {
+          if (typeof p.nickname === 'string' && p.nickname.trim()) state.nickname = p.nickname.trim();
+          if (Array.isArray(p.water)) state.water = p.water;
+          if (p.workouts && typeof p.workouts === 'object') state.workouts = p.workouts;
+          if (p.colors && typeof p.colors === 'object') state.colors = p.colors;
+          if (p.meta && typeof p.meta === 'object') {
+            if (p.meta.nick && typeof p.meta.nick.v === 'string') {
+              state.meta.nick = { v: p.meta.nick.v, u: p.meta.nick.u || 0, dirty: p.meta.nick.dirty || 0 };
+            }
+            if (p.meta.colors && p.meta.colors.v && typeof p.meta.colors.v === 'object') {
+              state.meta.colors = { v: p.meta.colors.v, u: p.meta.colors.u || 0, dirty: p.meta.colors.dirty || 0 };
+            }
+          }
+          if (Array.isArray(p.tomb)) state.tomb = p.tomb;
+        }
+      }
+    } catch (e) { /* 隐私模式等场景：忽略，使用内存态 */ }
+
+    SPORTS.forEach(function (s) { if (!Array.isArray(state.workouts[s.key])) state.workouts[s.key] = []; });
+
+    // 补齐新字段，保证每条记录都有 u（更新时间戳）与 dirty（待同步标记）
+    state.water.forEach(function (r) { if (typeof r.u !== 'number') r.u = 0; if (typeof r.dirty !== 'number') r.dirty = 0; });
+    SPORTS.forEach(function (s) {
+      state.workouts[s.key].forEach(function (r) { if (typeof r.u !== 'number') r.u = 0; if (typeof r.dirty !== 'number') r.dirty = 0; });
+    });
+    state.tomb.forEach(function (t) { if (typeof t.u !== 'number') t.u = 0; if (typeof t.dirty !== 'number') t.dirty = 0; });
+
+    if (!state.meta.nick.v) state.meta.nick.v = state.nickname;
+
+    // 配色缺失时随机分配，并立即落盘，保证同一项目永远同色
+    if (!SPORTS.every(function (s) { return /^#[0-9a-fA-F]{6}$/.test(state.colors[s.key] || ''); })) {
+      assignColors();
+      state.meta.colors = { v: state.colors, u: 0, dirty: 1 };
+      save();
+    }
+  }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); }
+    catch (e) { toast('浏览器存储不可用，本次记录仅保存在当前页面'); }
+  }
+
+  // 随机配色：一次性分配并持久化，保证同一项目永远同色、不同项目颜色不同
+  function assignColors() {
+    var pool = PALETTE.slice();
+    for (var i = pool.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+    }
+    SPORTS.forEach(function (s, i) { state.colors[s.key] = pool[i % pool.length]; });
+  }
+
+  /* ================= 日期 / 时间（统一按北京时间 UTC+8 划分） ================= */
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+  // 当前时刻平移为北京时间，再用 UTC 取值，避免受本机时区影响
+  function bjNow() { return new Date(Date.now() + BJ_OFFSET); }
+
+  // 北京时间的今天，格式 YYYY-MM-DD
+  function todayStr() {
+    var b = bjNow();
+    return b.getUTCFullYear() + '-' + pad2(b.getUTCMonth() + 1) + '-' + pad2(b.getUTCDate());
+  }
+  // 北京时间的此刻，格式 HH:MM
+  function nowTime() {
+    var b = bjNow();
+    return pad2(b.getUTCHours()) + ':' + pad2(b.getUTCMinutes());
+  }
+  // 北京时间的今天，中文长日期
+  function cnDate() {
+    var b = bjNow();
+    var w = ['日', '一', '二', '三', '四', '五', '六'][b.getUTCDay()];
+    return b.getUTCFullYear() + '年' + (b.getUTCMonth() + 1) + '月' + b.getUTCDate() + '日 星期' + w;
+  }
+  // 日期字符串加减天数（纯字符串运算，不受时区影响）
+  function shiftDate(d, days) {
+    var p = String(d).split('-');
+    var t = Date.UTC(+p[0], +p[1] - 1, +p[2]) + days * 86400000;
+    var dt = new Date(t);
+    return dt.getUTCFullYear() + '-' + pad2(dt.getUTCMonth() + 1) + '-' + pad2(dt.getUTCDate());
+  }
+  // 2026-11-05 → 2026年11月5日 星期四
+  function dateLabel(d) {
+    var p = String(d).split('-');
+    var w = ['日', '一', '二', '三', '四', '五', '六'][new Date(+p[0], +p[1] - 1, +p[2]).getDay()];
+    return (+p[0]) + '年' + (+p[1]) + '月' + (+p[2]) + '日 星期' + w;
+  }
+  // 2026-11-05 → 11月5日
+  function dateShort(d) {
+    var p = String(d).split('-');
+    return (+p[1]) + '月' + (+p[2]) + '日';
+  }
+  // 今天 / 昨天 / 空
+  function relDay(d) {
+    var t = todayStr();
+    if (d === t) return '今天';
+    if (d === shiftDate(t, -1)) return '昨天';
+    return '';
+  }
+  function isDateStr(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s); }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+  // 版本号：必须严格大于「已知的上一个版本」。
+  // 设备时钟不一定准（手机慢几秒、电脑手动改过时间），如果直接拿本机时间当版本号，
+  // 撤销用的版本号可能比云端已有记录的版本号还小 → 服务端会把它当"旧版本"丢掉，
+  // 撤销静默丢失，刷新后记录还会复活。所以新版本一律在已知版本上"再走一格"。
+  function nextVersion(prevU) {
+    var now = Date.now();
+    var prev = Number(prevU) || 0;
+    return now > prev ? now : prev + 1;
+  }
+
+  /* ================= 工具 ================= */
+  function todayWater() { return state.water.filter(function (r) { return r.date === todayStr(); }); }
+  function todayWorkouts(key) { return (state.workouts[key] || []).filter(function (r) { return r.date === todayStr(); }); }
+  // 指定某一天的记录
+  function waterOn(d) { return state.water.filter(function (r) { return r.date === d; }); }
+  function workoutsOn(d, key) { return (state.workouts[key] || []).filter(function (r) { return r.date === d; }); }
+  // 早期没有日期字段的旧记录：原样保留，单列出来，不丢数量
+  function undatedWater() { return state.water.filter(function (r) { return !isDateStr(r.date); }); }
+  function undatedWorkouts(key) { return (state.workouts[key] || []).filter(function (r) { return !isDateStr(r.date); }); }
+  function sportOf(key) { for (var i = 0; i < SPORTS.length; i++) if (SPORTS[i].key === key) return SPORTS[i]; return SPORTS[0]; }
+  function colorOf(key) { return state.colors[key] || '#2f7ef7'; }
+
+  function fmtNum(n) {
+    if (!isFinite(n)) return '0';
+    var v = Math.round(n * 100) / 100;
+    return String(v);
+  }
+  // 配速：分钟 / 公里
+  function fmtPace(min, km) {
+    if (!km || km <= 0) return '—';
+    var total = (min / km) * 60;
+    var m = Math.floor(total / 60);
+    var s = Math.round(total - m * 60);
+    if (s === 60) { m += 1; s = 0; }
+    return m + "'" + (s < 10 ? '0' + s : s) + "'";
+  }
+  function paceText(min, km) { return km > 0 ? fmtPace(min, km) + ' / 公里' : '—'; }
+
+  function toast(msg) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._tm);
+    t._tm = setTimeout(function () { t.classList.remove('show'); }, 2200);
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  }
+
+  /* ============================================================
+   *                    云端同步模块（v0.2B 新增）
+   *
+   *  设计要点：
+   *  · 身份 = 「同步码」。服务端只保存 sha256(同步码)，不保存明文同步码。
+   *  · 每条记录有稳定 id（本地生成，跨设备一致）与 u（变更时间戳）。
+   *  · 撤销写「墓碑」：deleted=1 的记录版本比旧数据新，旧数据不会把记录复活。
+   *  · 推送幂等：服务端按 (分组键, id) 只写入更新的版本 —— 重试不会多记一条。
+   *  · 拉取用服务端自增的 seq 做游标，不依赖设备时钟是否准确。
+   *  · 保存语义：本地先落盘（不丢数据），但「成功」提示必须等服务端确认；
+   *    失败给出明确原因并保留待同步状态，点「立即同步」可重试。
+   * ============================================================ */
+
+  /* ---------- SHA-256（纯 JS 实现：file:// 下 crypto.subtle 不可用） ---------- */
+  var SHA_K = [
+    0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+    0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+    0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+    0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+    0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+    0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+    0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+    0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+  ];
+  function rotr(x, n) { return (x >>> n) | (x << (32 - n)); }
+  function sha256hex(msg) {
+    var H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+    var bytes = [];
+    for (var i = 0; i < msg.length; i++) {
+      var cp = msg.codePointAt(i);
+      if (cp < 0x80) bytes.push(cp);
+      else if (cp < 0x800) bytes.push(0xC0 | (cp >> 6), 0x80 | (cp & 0x3F));
+      else if (cp < 0x10000) bytes.push(0xE0 | (cp >> 12), 0x80 | ((cp >> 6) & 0x3F), 0x80 | (cp & 0x3F));
+      else {
+        bytes.push(0xF0 | (cp >> 18), 0x80 | ((cp >> 12) & 0x3F), 0x80 | ((cp >> 6) & 0x3F), 0x80 | (cp & 0x3F));
+        i++;
+      }
+    }
+    var bitLen = bytes.length * 8;
+    bytes.push(0x80);
+    while (bytes.length % 64 !== 56) bytes.push(0);
+    bytes.push(0, 0, 0, 0);
+    bytes.push((bitLen >>> 24) & 255, (bitLen >>> 16) & 255, (bitLen >>> 8) & 255, bitLen & 255);
+    var w = new Array(64);
+    for (var off = 0; off < bytes.length; off += 64) {
+      for (var t = 0; t < 16; t++) {
+        w[t] = (bytes[off + t * 4] << 24) | (bytes[off + t * 4 + 1] << 16) |
+               (bytes[off + t * 4 + 2] << 8) | bytes[off + t * 4 + 3];
+      }
+      for (t = 16; t < 64; t++) {
+        var s0 = rotr(w[t - 15], 7) ^ rotr(w[t - 15], 18) ^ (w[t - 15] >>> 3);
+        var s1 = rotr(w[t - 2], 17) ^ rotr(w[t - 2], 19) ^ (w[t - 2] >>> 10);
+        w[t] = (w[t - 16] + s0 + w[t - 7] + s1) | 0;
+      }
+      var a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+      for (t = 0; t < 64; t++) {
+        var S1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
+        var ch = (e & f) ^ (~e & g);
+        var t1 = (h + S1 + ch + SHA_K[t] + w[t]) | 0;
+        var S0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22);
+        var maj = (a & b) ^ (a & c) ^ (b & c);
+        var t2 = (S0 + maj) | 0;
+        h = g; g = f; f = e; e = (d + t1) | 0;
+        d = c; c = b; b = a; a = (t1 + t2) | 0;
+      }
+      H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+      H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+    }
+    var out = '';
+    for (var q = 0; q < 8; q++) out += ('00000000' + (H[q] >>> 0).toString(16)).slice(-8);
+    return out;
+  }
+
+  /* ---------- 同步码 ---------- */
+  function genSyncCode() {
+    var s = '', i;
+    var rnd = new Uint8Array(20);
+    if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(rnd);
+    else for (i = 0; i < 20; i++) rnd[i] = Math.floor(Math.random() * 256);
+    for (i = 0; i < 20; i++) s += CODE_ALPHABET.charAt(rnd[i] % CODE_ALPHABET.length);
+    return s.slice(0, 5) + '-' + s.slice(5, 10) + '-' + s.slice(10, 15) + '-' + s.slice(15, 20);
+  }
+
+  /* ---------- HTTP ---------- */
+  function apiBase() {
+    var v = ($('syncApi').value || '').trim();
+    return v.replace(/\/+$/, '');
+  }
+  function apiUrl(path, query) {
+    return apiBase() + path + (query ? '?' + query : '');
+  }
+  function errText(err) {
+    var m = (err && err.message) || '';
+    if (!m) return '网络错误';
+    if (/Failed to fetch|NetworkError|Load failed|timeout/i.test(m)) return '连不上云端服务（地址不对或没联网）';
+    return m;
+  }
+  function apiGet(url) {
+    return fetch(url, { headers: { 'Accept': 'application/json' } }).then(function (r) {
+      return r.text().then(function (t) {
+        var j = null;
+        try { j = JSON.parse(t); } catch (e) { /* 不是 JSON */ }
+        if (!r.ok) throw new Error((j && j.error) ? j.error : ('服务器返回 ' + r.status));
+        return j || {};
+      });
+    });
+  }
+  function apiPost(url, body) {
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      return r.text().then(function (t) {
+        var j = null;
+        try { j = JSON.parse(t); } catch (e) { /* 不是 JSON */ }
+        if (!r.ok) throw new Error((j && j.error) ? j.error : ('服务器返回 ' + r.status));
+        return j || {};
+      });
+    });
+  }
+
+  /* ---------- 同步配置 ---------- */
+  // 记录集编号：由同步码派生的 8 位短指纹。
+  // 同步码是密码，不能明文展示，但必须让人能核对「两台是不是同一份记录」——
+  // 只显示指纹，两边一比就知道。同步码不同 ⇒ 云端分到不同的桶 ⇒ 两份互不可见的记录。
+  function setIdOf(code) {
+    if (!code) return '';
+    var h = sha256hex(code).slice(0, 8).toUpperCase();
+    return h.slice(0, 4) + '-' + h.slice(4);
+  }
+  function renderSetId() {
+    var el = $('syncSetId');
+    if (!el) return;
+    var id = sync.setId;
+    el.textContent = id || '未设置（填入同步码后才有）';
+    el.className = 'setid-val' + (id ? '' : ' off');
+  }
+  function loadSyncCfg() {
+    try {
+      var raw = localStorage.getItem(SYNC_CFG_KEY);
+      if (raw) {
+        var p = JSON.parse(raw);
+        if (p && typeof p === 'object') {
+          if (typeof p.api === 'string') sync.api = p.api;
+          if (typeof p.code === 'string') sync.code = p.code;
+        }
+      }
+    } catch (e) { /* 忽略 */ }
+    sync.key = sync.code ? sha256hex(sync.code) : '';
+    sync.setId = setIdOf(sync.code);
+    $('syncApi').value = sync.api;
+    $('syncCode').value = sync.code;
+    renderSetId();
+  }
+  function saveSyncCfg() {
+    try {
+      localStorage.setItem(SYNC_CFG_KEY, JSON.stringify({ api: sync.api, code: sync.code }));
+    } catch (e) { /* 忽略 */ }
+  }
+
+  /* ---------- 状态显示 ---------- */
+  var SYNC_TAG = {
+    off:  ['未连接', '#9aa6b6'],
+    busy: ['同步中', '#2f7ef7'],
+    ok:   ['已同步', '#22a06b'],
+    err:  ['同步失败', '#e0513c']
+  };
+  // 待同步条数：本地有改动但云端还没确认的条数（失败后保留，重试成功才归零）
+  function pendingCount() {
+    var n = 0;
+    state.water.forEach(function (r) { if (r.dirty) n++; });
+    SPORTS.forEach(function (s) {
+      (state.workouts[s.key] || []).forEach(function (r) { if (r.dirty) n++; });
+    });
+    state.tomb.forEach(function (t) { if (t.dirty) n++; });
+    if (state.meta.nick.dirty) n++;
+    if (state.meta.colors.dirty) n++;
+    return n;
+  }
+  function setSyncStatus(kind, text) {
+    var m = SYNC_TAG[kind] || SYNC_TAG.off;
+    $('syncTag').textContent = m[0];
+    $('syncTag').style.color = m[1];
+    var st = $('syncStatus');
+    var pend = pendingCount();
+    var extra = (kind !== 'busy' && pend > 0) ? '　还有 ' + pend + ' 条待同步' : '';
+    // 状态行始终带上记录集编号：一眼看出这台在用哪一份记录
+    var id = sync.setId ? ('　记录集 ' + sync.setId) : '';
+    st.textContent = (text || '') + id + extra;
+    st.className = 'rec-note left' + (kind === 'err' ? ' err' : (kind === 'ok' ? ' ok' : ''));
+  }
+
+  /* ---------- 待同步集合 ---------- */
+  function findWater(id) {
+    for (var i = 0; i < state.water.length; i++) if (state.water[i].id === id) return state.water[i];
+    return null;
+  }
+  function findWorkout(sport, id) {
+    var list = state.workouts[sport] || [];
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
+  function findTomb(id) {
+    for (var i = 0; i < state.tomb.length; i++) if (state.tomb[i].id === id) return state.tomb[i];
+    return null;
+  }
+  function addTomb(wireId, u) {
+    var t = findTomb(wireId);
+    if (!t) { state.tomb.push({ id: wireId, u: u, dirty: 1 }); return; }
+    if (u >= t.u) { t.u = u; t.dirty = 1; }
+  }
+
+  // 收集所有待同步的变更（一次推送里带上）
+  function collectDirtyRows() {
+    var rows = [];
+    state.water.forEach(function (r) {
+      if (!r.dirty) return;
+      rows.push({ id: 'w:' + r.id, p: { k: 'water', r: { id: r.id, date: r.date, ts: r.ts, ml: r.ml } }, u: r.u, d: 0 });
+    });
+    SPORTS.forEach(function (s) {
+      (state.workouts[s.key] || []).forEach(function (r) {
+        if (!r.dirty) return;
+        rows.push({
+          id: 'x:' + s.key + ':' + r.id,
+          p: { k: 'workout', s: s.key, r: { id: r.id, date: r.date, ts: r.ts, km: r.km, min: r.min } },
+          u: r.u, d: 0
+        });
+      });
+    });
+    state.tomb.forEach(function (t) {
+      if (!t.dirty) return;
+      rows.push({ id: t.id, p: null, u: t.u, d: 1 });
+    });
+    if (state.meta.nick.dirty) {
+      rows.push({ id: 'meta:nick', p: { k: 'nick', v: state.nickname }, u: state.meta.nick.u, d: 0 });
+    }
+    if (state.meta.colors.dirty) {
+      rows.push({ id: 'meta:colors', p: { k: 'colors', v: state.colors }, u: state.meta.colors.u, d: 0 });
+    }
+    return rows;
+  }
+
+  // 服务端确认成功后，才清掉这些变更的待同步标记
+  function clearDirty(row) {
+    var id = row.id;
+    // 墓碑的 id 与被撤销记录同格式（也是 'w:' / 'x:' 开头），
+    // 必须先认墓碑，否则会被当成普通记录处理后直接返回，墓碑就永远清不掉待同步标记。
+    if (row.d) {
+      var t = findTomb(id);
+      if (t && t.u === row.u) t.dirty = 0;
+      return;
+    }
+    if (id.indexOf('w:') === 0) {
+      var r = findWater(id.slice(2));
+      if (r && r.u === row.u) r.dirty = 0;
+      return;
+    }
+    if (id.indexOf('x:') === 0) {
+      var parts = id.split(':');
+      var w = findWorkout(parts[1], parts.slice(2).join(':'));
+      if (w && w.u === row.u) w.dirty = 0;
+      return;
+    }
+    if (id === 'meta:nick') { if (state.meta.nick.u === row.u) state.meta.nick.dirty = 0; return; }
+    if (id === 'meta:colors') { if (state.meta.colors.u === row.u) state.meta.colors.dirty = 0; return; }
+    var t = findTomb(id);
+    if (t && t.u === row.u) t.dirty = 0;
+  }
+
+  /* ---------- 推送 ---------- */
+  var pushChain = Promise.resolve();
+  function pushNow() {
+    pushChain = pushChain.then(doPush, doPush);
+    return pushChain;
+  }
+  function doPush() {
+    var rows = collectDirtyRows();
+    if (!rows.length) return Promise.resolve(true);
+    if (!sync.connected) {
+      sync.lastErr = '尚未连接云端';
+      return Promise.resolve(false);
+    }
+    setSyncStatus('busy', '正在保存到云端…');
+    // 服务端单次有上限（默认 200 条）：分批推送，且只对「服务端已确认」的那一批清除待同步标记，
+    // 免得没存上的记录被当成已同步（那就等于悄悄丢数据）。
+    // 若服务端上限比这还小，会被明确拒绝（too many rows）——这里自动减半分批后重试。
+    var i = 0;
+    function pushChunk() {
+      if (i >= rows.length) return Promise.resolve(true);
+      var size = Math.max(1, Math.min(sync.maxRows, 200));
+      var part = rows.slice(i, i + size);
+      return apiPost(apiUrl('/api/push'), { key: sync.key, rows: part }).then(
+        function (data) {
+          if (!data || data.ok !== 1) throw new Error('服务器未确认写入');
+          part.forEach(clearDirty);
+          save();
+          i += part.length;
+          return pushChunk();
+        },
+        function (err) {
+          // 服务端整批拒绝了这一批（没写进去），减半后重试是安全的：同一条重推不会多记
+          var msg = errText(err);
+          if (part.length > 1 && /too many rows|请求体过大|413/i.test(msg)) {
+            sync.maxRows = Math.max(1, Math.floor(part.length / 2));
+            return pushChunk();
+          }
+          throw err;
+        }
+      );
+    }
+    return pushChunk()
+      .then(function () {
+        sync.lastErr = '';
+        setSyncStatus('ok', '已同步 · ' + nowTime());
+        return true;
+      })
+      .catch(function (err) {
+        sync.lastErr = errText(err);
+        setSyncStatus('err', '保存失败：' + sync.lastErr + '（记录已存在本机，可点「立即同步」重试，重试不会多记一条）');
+        return false;
+      });
+  }
+
+  /* ---------- 拉取与合并 ---------- */
+  function upsertWater(r, u) {
+    var i, cur = null;
+    for (i = 0; i < state.water.length; i++) if (state.water[i].id === r.id) { cur = state.water[i]; break; }
+    if (!cur) {
+      state.water.push({ id: r.id, date: r.date, ts: r.ts, ml: r.ml, u: u, dirty: 0 });
+      return true;
+    }
+    if ((cur.u || 0) < u) {
+      state.water[i] = { id: r.id, date: r.date, ts: r.ts, ml: r.ml, u: u, dirty: 0 };
+      return true;
+    }
+    return false;
+  }
+  function upsertWorkout(sport, r, u) {
+    if (!state.workouts[sport]) state.workouts[sport] = [];
+    var list = state.workouts[sport], i, cur = null;
+    for (i = 0; i < list.length; i++) if (list[i].id === r.id) { cur = list[i]; break; }
+    if (!cur) {
+      list.push({ id: r.id, date: r.date, ts: r.ts, km: r.km, min: r.min, u: u, dirty: 0 });
+      return true;
+    }
+    if ((cur.u || 0) < u) {
+      list[i] = { id: r.id, date: r.date, ts: r.ts, km: r.km, min: r.min, u: u, dirty: 0 };
+      return true;
+    }
+    return false;
+  }
+  function removeLocal(wireId) {
+    var changed = false;
+    if (wireId.indexOf('w:') === 0) {
+      var id = wireId.slice(2);
+      var before = state.water.length;
+      state.water = state.water.filter(function (r) { return r.id !== id; });
+      changed = state.water.length !== before;
+    } else if (wireId.indexOf('x:') === 0) {
+      var parts = wireId.split(':');
+      var sport = parts[1], wid = parts.slice(2).join(':');
+      if (state.workouts[sport]) {
+        var list = state.workouts[sport];
+        var before2 = list.length;
+        state.workouts[sport] = list.filter(function (r) { return r.id !== wid; });
+        changed = state.workouts[sport].length !== before2;
+      }
+    }
+    return changed;
+  }
+
+  // 应用云端返回的行；返回真正改变本地状态的数量
+  function applyRemoteRows(rows) {
+    var n = 0;
+    (rows || []).forEach(function (row) {
+      if (row.seq && row.seq > sync.lastSeq) sync.lastSeq = row.seq;
+      var u = Number(row.u) || 0;
+
+      if (row.d) {                                   // 墓碑：另一台设备撤销了这条
+        // 本机可能已经有同一条墓碑（自己撤销过），但删除动作必须无条件执行：
+        // 否则「旧的记录版本」会先把记录带回来，墓碑却因为「不更新」而不删除它。
+        var t = findTomb(row.id);
+        if (!t) state.tomb.push({ id: row.id, u: u, dirty: 0 });
+        else if (u > t.u) t.u = u;
+        n += removeLocal(row.id) ? 1 : 0;
+        return;
+      }
+
+      var p = row.p || {};
+      if (p.k === 'water' && p.r) {
+        if (upsertWater(p.r, u)) n++;
+      } else if (p.k === 'workout' && p.r && p.s) {
+        if (upsertWorkout(p.s, p.r, u)) n++;
+      } else if (p.k === 'nick') {
+        if (u > (state.meta.nick.u || 0)) {
+          state.nickname = p.v;
+          state.meta.nick = { v: p.v, u: u, dirty: 0 };
+          n++;
+        }
+      } else if (p.k === 'colors') {
+        if (u > (state.meta.colors.u || 0)) {
+          state.colors = p.v;
+          state.meta.colors = { v: p.v, u: u, dirty: 0 };
+          n++;
+        }
+      }
+    });
+    return n;
+  }
+
+  // 这份记录集在云端到底有没有数据？
+  // 用来区分两件完全不同的事：「这份记录集是空的」和「没有新变化」——
+  // 之前一律说「云端暂无新记录」，会把「两台用的不是同一份记录」伪装成「云端没数据」。
+  function cloudTotal() {
+    return apiGet(apiUrl('/api/pull', 'key=' + encodeURIComponent(sync.key) + '&since=0'))
+      .then(function (d) {
+        if (!d || !d.rows) return 0;
+        // 只数真正的记录（饮水 w: / 运动 x:），且只数还活着的：
+        // 配色、昵称这类 meta 行每台连上的设备都会往自己的桶里写一条，
+        // 把它们算进去，「这份记录集在云端还没有任何记录」这句话就永远说不出口。
+        var n = 0;
+        for (var i = 0; i < d.rows.length; i++) {
+          var row = d.rows[i];
+          var id = String(row.id || '');
+          if (row.d) continue;
+          if (id.indexOf('w:') === 0 || id.indexOf('x:') === 0) n++;
+        }
+        return n;
+      })
+      .catch(function () { return -1; });
+  }
+
+  function syncPull(manual) {
+    if (!sync.connected) {
+      if (manual) toast('尚未连接云端：先填服务地址与同步码，点「连接云端」');
+      return Promise.resolve(false);
+    }
+    setSyncStatus('busy', '正在从云端拉取…');
+    return apiGet(apiUrl('/api/pull', 'key=' + encodeURIComponent(sync.key) + '&since=' + sync.lastSeq))
+      .then(function (data) {
+        if (!data || data.ok !== 1) throw new Error('服务器返回异常');
+        var n = applyRemoteRows(data.rows || []);
+        // 云端还没有配色 → 发布本机配色。
+        // 必须给出真实时间戳：服务端按「版本不新就跳过」判重，u=0 会被当成重复而永远写不进去。
+        if (!state.meta.colors.u) {
+          state.meta.colors.u = Date.now();
+          state.meta.colors.dirty = 1;
+        }
+        save();
+        setSyncStatus('ok', '已同步 · ' + nowTime() + '（本次更新 ' + n + ' 条）');
+        if (n) render();
+        if (manual) {
+          if (n) { toast('已刷新，' + n + ' 条来自云端'); }
+          else {
+            cloudTotal().then(function (total) {
+              if (total === 0) {
+                toast('已刷新：这份记录集（' + sync.setId + '）在云端还没有任何记录。' +
+                      '如果另一台设备本该有记录，请比对两台的「记录集」编号——编号不同就是两份数据。');
+              } else if (total > 0) {
+                toast('已刷新：云端这份记录集共 ' + (total >= 500 ? '至少 500' : total) +
+                      ' 条，你已经都同步过了。');
+              } else {
+                toast('已刷新，云端暂无新记录');
+              }
+            });
+          }
+        }
+        return true;
+      })
+      .catch(function (err) {
+        sync.lastErr = errText(err);
+        setSyncStatus('err', '刷新失败：' + sync.lastErr);
+        if (manual) toast('刷新失败：' + sync.lastErr);
+        return false;
+      });
+  }
+
+  /* ---------- 连接 / 断开 ---------- */
+  // 连接云端。silent=true 用于「打开页面自动续连」：不弹提示，只更新状态行。
+  function connectCloud(silent) {
+    var api = apiBase();
+    var code = ($('syncCode').value || '').trim();
+    if (!api) { if (!silent) toast('请先填写云端服务地址'); return; }
+    if (!code) { if (!silent) toast('请先填写同步码，或点「生成同步码」'); return; }
+    sync.api = api;
+    sync.code = code;
+    sync.key = sha256hex(code);
+    sync.setId = setIdOf(code);
+    saveSyncCfg();
+    renderSetId();
+    setSyncStatus('busy', '正在连接云端…');
+    return apiGet(apiUrl('/api/health'))
+      .then(function (health) {
+        // 服务端会声明单次推送上限；按它分批推送，省得一次推太多被拒
+        if (health && health.max_push_rows) {
+          var m = parseInt(health.max_push_rows, 10);
+          if (m > 0) sync.maxRows = Math.min(1000, m);
+        }
+        sync.connected = true;
+        sync.lastSeq = 0;
+        return syncPull(false);
+      })
+      .then(function (pulled) {
+        // 拉取失败时 syncPull 已给出明确原因并保留待同步状态，这里不再覆盖成「已连接」
+        if (!pulled) return false;
+        setSyncStatus('ok', '已连接云端 · ' + nowTime());
+        if (!silent) toast('已连接云端 · 记录集 ' + sync.setId + '（另一台设备要显示同一个编号）');
+        return pushNow();
+      })
+      .catch(function (err) {
+        sync.connected = false;
+        sync.lastErr = errText(err);
+        setSyncStatus('err', '连接失败：' + sync.lastErr);
+        if (!silent) toast('连接失败：' + sync.lastErr);
+      });
+  }
+  function disconnectCloud() {
+    sync.connected = false;
+    sync.lastSeq = 0;
+    setSyncStatus('off', '已断开连接。记录仍保存在本机浏览器，重新填入同步码即可再连上。');
+    toast('已断开连接');
+  }
+
+  /* ---------- 保存提示：成功才提示成功 ---------- */
+  function syncCommit(okMsg) {
+    if (!sync.connected) {
+      setSyncStatus('off', '未连接云端：记录只保存在本机浏览器。');
+      // 没连上云端时说清楚原因，别让人以为已经存到云端
+      var why = sync.lastErr ? ('；未同步到云端：' + sync.lastErr) : '（未连接云端）';
+      toast(okMsg + '（只保存在本机' + why + '；另一台设备看不到）');
+      return Promise.resolve(false);
+    }
+    return pushNow().then(function (ok) {
+      if (ok) {
+        setSyncStatus('ok', '已同步 · ' + nowTime());
+        // 成功时把「存到哪一份记录」一并说清楚：省得再去比对
+        toast(okMsg + '（已存到云端 · 记录集 ' + sync.setId + '）');
+      } else {
+        toast('保存失败：' + sync.lastErr + '（已存在本机，点「立即同步」可重试，重试不会多记一条）');
+      }
+      return ok;
+    });
+  }
+
+  /* ================= 渲染：顶部 ================= */
+  function renderTop() {
+    $('nickText').textContent = state.nickname;
+    $('cardDate').textContent = cnDate();
+  }
+
+  /* ================= 渲染：饮水 ================= */
+  function renderWater() {
+    var list = todayWater();
+    var total = 0;
+    list.forEach(function (r) { total += (r.ml || 0); });
+    var pct = total / GOAL * 100;
+    var C = 2 * Math.PI * 58;
+
+    $('waterTotal').textContent = total;
+    $('waterCups').textContent = Math.round(total / CUP) + ' / 8 杯';
+    $('waterPct').textContent = Math.round(pct) + '%';
+    var ring = $('ringFg');
+    ring.style.strokeDasharray = C;
+    ring.style.strokeDashoffset = C * (1 - Math.min(pct, 100) / 100);
+
+    if (total >= GOAL) {
+      $('waterLeft').textContent = '已达成';
+      $('waterLeftLabel').textContent = '目标 ' + GOAL + ' ml 已完成 🎉';
+      $('waterLeftBox').className = 'stat left done';
+    } else {
+      $('waterLeft').textContent = GOAL - total;
+      $('waterLeftLabel').textContent = '还差 (毫升)';
+      $('waterLeftBox').className = 'stat left';
+    }
+
+    var ul = $('waterList');
+    if (!list.length) {
+      ul.innerHTML = '<li class="empty">今日暂无饮水记录，点上方按钮喝一杯</li>';
+      return;
+    }
+    ul.innerHTML = list.slice().reverse().map(function (r) {
+      return '<li>' +
+        '<span class="t">' + esc(r.ts) + '</span>' +
+        '<span class="d">' + (r.ml || 0) + ' ml</span>' +
+        (r.dirty ? '<span class="pend" title="还没存上云端">待同步</span>' : '') +
+        '<button class="undo" type="button" data-water="' + esc(r.id) + '" aria-label="撤销这条记录">×</button>' +
+        '</li>';
+    }).join('');
+  }
+
+  /* ================= 渲染：运动 ================= */
+  function renderTabs() {
+    $('tabs').innerHTML = SPORTS.map(function (s) {
+      var active = s.key === currentSport;
+      return '<button class="tab' + (active ? ' active' : '') + '" type="button" data-tab="' + esc(s.key) + '"' +
+        (active ? ' style="background:' + colorOf(s.key) + '"' : '') + '>' +
+        '<span class="dot" style="background:' + (active ? 'rgba(255,255,255,.85)' : colorOf(s.key)) + '"></span>' +
+        esc(s.key) + '</button>';
+    }).join('');
+  }
+
+  function renderPanels() {
+    $('panels').innerHTML = SPORTS.map(function (s) {
+      var recs = todayWorkouts(s.key);
+      var c = colorOf(s.key);
+      var km = 0, min = 0;
+      recs.forEach(function (r) { km += (+r.km || 0); min += (+r.min || 0); });
+
+      var sum;
+      if (s.mode === 'km') sum = '今日合计 ' + fmtNum(km) + ' 公里 · ' + fmtNum(min) + ' 分钟';
+      else sum = '今日合计 ' + fmtNum(min) + ' 分钟';
+
+      var paceHtml = '';
+      if (s.key === '跑步') {
+        var last = recs.length ? recs[recs.length - 1] : null;
+        paceHtml =
+          '<div class="pace-box">' +
+            '<div><label>最近一次配速</label><b>' + (last ? esc(paceText(+last.min, +last.km)) : '—') + '</b></div>' +
+            '<div><label>今日平均配速</label><b>' + (km > 0 ? esc(paceText(min, km)) : '—') + '</b></div>' +
+          '</div>';
+      }
+
+      var formHtml;
+      if (s.mode === 'km') {
+        formHtml =
+          '<div class="ex-form">' +
+            '<div class="field"><label>距离（公里）</label><input type="number" inputmode="decimal" step="0.1" min="0" placeholder="5.0" data-in="km"></div>' +
+            '<div class="field"><label>时长（分钟）</label><input type="number" inputmode="decimal" step="1" min="0" placeholder="30" data-in="min"></div>' +
+            '<button class="btn-sub" type="button" data-add="' + esc(s.key) + '" style="background:' + c + '">记录</button>' +
+          '</div>';
+      } else {
+        formHtml =
+          '<div class="ex-form">' +
+            '<div class="field"><label>时长（分钟）</label><input type="number" inputmode="decimal" step="1" min="0" placeholder="20" data-in="min"></div>' +
+            '<button class="btn-sub" type="button" data-add="' + esc(s.key) + '" style="background:' + c + '">记录</button>' +
+          '</div>';
+      }
+
+      var listHtml;
+      if (!recs.length) {
+        listHtml = '<ul class="rec"><li class="empty">今日暂无运动记录</li></ul>';
+      } else {
+        listHtml = '<ul class="rec">' + recs.slice().reverse().map(function (r) {
+          var detail = s.mode === 'km'
+            ? fmtNum(r.km) + ' 公里 · ' + fmtNum(r.min) + ' 分钟'
+            : fmtNum(r.min) + ' 分钟';
+          if (s.key === '跑步') detail += ' · 配速 ' + fmtPace(+r.min, +r.km);
+          return '<li>' +
+            '<span class="t">' + esc(r.ts) + '</span>' +
+            '<span class="d">' + esc(detail) + '</span>' +
+            '<button class="undo" type="button" data-workout="' + esc(s.key) + '" data-id="' + esc(r.id) + '" aria-label="撤销这条记录">×</button>' +
+            '</li>';
+        }).join('') + '</ul>';
+      }
+
+      return '<div class="panel" data-panel="' + esc(s.key) + '"' + (s.key === currentSport ? '' : ' hidden') + '>' +
+        '<div class="ex-head">' +
+          '<span class="name"><span class="dot" style="background:' + c + '"></span>' + s.emoji + ' ' + esc(s.key) + '</span>' +
+          '<span class="sum">' + esc(sum) + '</span>' +
+        '</div>' +
+        paceHtml + formHtml + listHtml +
+      '</div>';
+    }).join('');
+  }
+
+  function renderExSummary() {
+    var rows = SPORTS.filter(function (s) { return todayWorkouts(s.key).length > 0; });
+    var totalMin = 0, totalKm = 0;
+    rows.forEach(function (s) {
+      todayWorkouts(s.key).forEach(function (r) { totalMin += (+r.min || 0); totalKm += (+r.km || 0); });
+    });
+
+    if (!rows.length) {
+      $('exTag').textContent = '尚未运动';
+      $('exSummary').innerHTML = '<div class="empty">今日暂无运动记录</div>';
+      return;
+    }
+    var parts = [fmtNum(totalMin) + ' 分钟'];
+    if (totalKm > 0) parts.unshift(fmtNum(totalKm) + ' 公里');
+    $('exTag').textContent = parts.join(' · ');
+    $('exSummary').innerHTML = rows.map(function (s) {
+      var recs = todayWorkouts(s.key);
+      var km = 0, min = 0;
+      recs.forEach(function (r) { km += (+r.km || 0); min += (+r.min || 0); });
+      var val = s.mode === 'km' ? fmtNum(km) + ' 公里 · ' + fmtNum(min) + ' 分钟' : fmtNum(min) + ' 分钟';
+      return '<div class="sum-row">' +
+        '<span class="dot" style="background:' + colorOf(s.key) + '"></span>' +
+        '<span class="nm">' + s.emoji + ' ' + esc(s.key) + '</span>' +
+        '<span class="vv">' + esc(val) + ' · ' + recs.length + ' 次</span>' +
+        '</div>';
+    }).join('');
+  }
+
+  /* ================= 渲染：今日记录卡（Canvas 手绘，导出与预览同源） ================= */
+  var cardDataUrl = '';
+
+  function buildCard() {
+    var W = 750;
+    var M = 30, PAD = 46;
+    var innerX = M + PAD;
+    var innerW = W - 2 * M - 2 * PAD;
+
+    var waterList = todayWater();
+    var waterTotal = 0;
+    waterList.forEach(function (r) { waterTotal += (+r.ml || 0); });
+    var pct = Math.min(waterTotal / GOAL, 1);
+
+    var rows = SPORTS.filter(function (s) { return todayWorkouts(s.key).length > 0; });
+    var rowsH = rows.length ? rows.length * 92 : 74;
+
+    // 纵向布局（先算总高，再设画布尺寸）
+    var TOP = 78;
+    var brandY = TOP + 32;
+    var avatarCY = TOP + 32 + 26 + 44;
+    var nickY = avatarCY - 4;
+    var dateY = avatarCY + 30;
+    var div1 = avatarCY + 62;
+    var wTitle = div1 + 46;
+    var ringCX = innerX + 92, ringCY = wTitle + 116, ringR = 78;
+    var rightX = innerX + 214;
+    var pctLabelY = ringCY - 52;
+    var pctValY = ringCY + 10;
+    var leftY = ringCY + 52;
+    var div2 = ringCY + 108;
+    var eTitle = div2 + 46;
+    var rowsTop = eTitle + 34;
+    var rowsEnd = rowsTop + rowsH;
+    var footLine = rowsEnd + 18;
+    var footText = rowsEnd + 58;
+    var H = rowsEnd + 104;
+
+    var cvs = document.createElement('canvas');
+    cvs.width = W * 2; cvs.height = H * 2;
+    var ctx = cvs.getContext('2d');
+    ctx.scale(2, 2);
+    ctx.textBaseline = 'alphabetic';
+
+    // 背景
+    var bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#e9f2ff');
+    bg.addColorStop(.55, '#f3f8ff');
+    bg.addColorStop(1, '#eef2f7');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // 白色卡片
+    roundRect(ctx, M, M, W - 2 * M, H - 2 * M, 34);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+
+    function roundRect(c, x, y, w, h, r) {
+      c.beginPath();
+      c.moveTo(x + r, y);
+      c.arcTo(x + w, y, x + w, y + h, r);
+      c.arcTo(x + w, y + h, x, y + h, r);
+      c.arcTo(x, y + h, x, y, r);
+      c.arcTo(x, y, x + r, y, r);
+      c.closePath();
+    }
+    function divider(y) {
+      ctx.strokeStyle = '#eef1f6';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(innerX, y); ctx.lineTo(innerX + innerW, y); ctx.stroke();
+    }
+    function emoji(text, x, y, size) {
+      ctx.font = size + 'px ' + EMOJI_FONT;
+      ctx.textAlign = 'center';
+      ctx.fillText(text, x, y);
+      ctx.textAlign = 'left';
+    }
+
+    // 品牌名
+    ctx.fillStyle = '#1f2937';
+    ctx.font = '700 30px ' + CJK_FONT;
+    ctx.textAlign = 'center';
+    ctx.fillText('我的健康记录', W / 2, brandY);
+    ctx.textAlign = 'left';
+
+    // 头像
+    ctx.beginPath();
+    ctx.arc(innerX + 44, avatarCY, 44, 0, Math.PI * 2);
+    ctx.fillStyle = '#e8f2ff';
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#d5e6ff';
+    ctx.stroke();
+    emoji('🌱', innerX + 44, avatarCY + 17, 46);
+
+    // 昵称 + 日期
+    ctx.fillStyle = '#1f2937';
+    ctx.font = '700 38px ' + CJK_FONT;
+    ctx.fillText(state.nickname, innerX + 108, nickY);
+    ctx.fillStyle = '#64748b';
+    ctx.font = '23px ' + CJK_FONT;
+    ctx.fillText(cnDate(), innerX + 110, dateY);
+
+    divider(div1);
+
+    // 饮水
+    ctx.fillStyle = '#1f2937';
+    ctx.font = '700 28px ' + CJK_FONT;
+    ctx.fillText('今日饮水', innerX, wTitle);
+    ctx.font = '22px ' + EMOJI_FONT;
+    ctx.fillText('💧', innerX - 30, wTitle - 3);
+
+    // 圆环
+    ctx.lineWidth = 18;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#eaf0fb';
+    ctx.beginPath(); ctx.arc(ringCX, ringCY, ringR, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = '#2f7ef7';
+    ctx.beginPath();
+    ctx.arc(ringCX, ringCY, ringR, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pct);
+    ctx.stroke();
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#2f7ef7';
+    ctx.font = '700 44px ' + CJK_FONT;
+    ctx.fillText(String(waterTotal), ringCX, ringCY - 6);
+    ctx.fillStyle = '#9aa6b6';
+    ctx.font = '20px ' + CJK_FONT;
+    ctx.fillText('/ ' + GOAL + ' ml', ringCX, ringCY + 40);
+    ctx.textAlign = 'left';
+
+    // 右侧统计
+    ctx.fillStyle = '#9aa6b6';
+    ctx.font = '21px ' + CJK_FONT;
+    ctx.fillText('完成百分比', rightX, pctLabelY);
+    ctx.fillStyle = '#2f7ef7';
+    ctx.font = '700 54px ' + CJK_FONT;
+    ctx.fillText(Math.round(waterTotal / GOAL * 100) + '%', rightX, pctValY);
+    ctx.fillStyle = '#64748b';
+    ctx.font = '23px ' + CJK_FONT;
+    ctx.fillText(waterTotal >= GOAL ? '🎉 已达成今日目标' : '还差 ' + (GOAL - waterTotal) + ' ml', rightX, leftY);
+
+    divider(div2);
+
+    // 运动
+    ctx.fillStyle = '#1f2937';
+    ctx.font = '700 28px ' + CJK_FONT;
+    ctx.fillText('今日运动', innerX, eTitle);
+    ctx.font = '22px ' + EMOJI_FONT;
+    ctx.fillText('🏃', innerX - 30, eTitle - 3);
+
+    if (!rows.length) {
+      ctx.fillStyle = '#9aa6b6';
+      ctx.font = '24px ' + CJK_FONT;
+      ctx.fillText('今日暂无运动记录', innerX + 4, rowsTop + 40);
+    } else {
+      rows.forEach(function (s, i) {
+        var y = rowsTop + i * 92;
+        var recs = todayWorkouts(s.key);
+        var km = 0, min = 0;
+        recs.forEach(function (r) { km += (+r.km || 0); min += (+r.min || 0); });
+
+        // 彩色圆点
+        ctx.beginPath();
+        ctx.arc(innerX + 14, y + 26, 13, 0, Math.PI * 2);
+        ctx.fillStyle = colorOf(s.key);
+        ctx.fill();
+
+        ctx.fillStyle = '#1f2937';
+        ctx.font = '700 27px ' + CJK_FONT;
+        ctx.fillText(s.key, innerX + 40, y + 34);
+
+        ctx.fillStyle = '#64748b';
+        ctx.font = '22px ' + CJK_FONT;
+        var sub = s.mode === 'km'
+          ? fmtNum(km) + ' 公里 · ' + fmtNum(min) + ' 分钟 · ' + recs.length + ' 次'
+          : fmtNum(min) + ' 分钟 · ' + recs.length + ' 次';
+        if (s.key === '跑步' && km > 0) sub += ' · 平均配速 ' + fmtPace(min, km);
+        ctx.fillText(sub, innerX + 40, y + 66);
+      });
+    }
+
+    // 页脚
+    ctx.strokeStyle = '#eef1f6';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(innerX, footLine); ctx.lineTo(innerX + innerW, footLine); ctx.stroke();
+    ctx.fillStyle = '#b6c0cd';
+    ctx.font = '21px ' + CJK_FONT;
+    ctx.textAlign = 'center';
+    ctx.fillText('我的健康记录 · 每日饮水与运动', W / 2, footText);
+    ctx.textAlign = 'left';
+
+    cardDataUrl = cvs.toDataURL('image/png');
+    $('cardImg').src = cardDataUrl;
+  }
+
+  /* ================= 渲染：记录日期 ================= */
+  function renderRecDate() {
+    var t = todayStr();
+    $('recDate').value = recDate;
+    $('recDate').max = t;
+    var rel = relDay(recDate);
+    $('recDateTag').textContent = rel || dateShort(recDate);
+    if (recDate === t) {
+      $('recNote').innerHTML = '新记录会计入 <b>' + dateLabel(recDate) + '（今天）</b>。想补填过去的日子，把上面的日期改成那一天即可，补填的记录<b>不会算进今天</b>。';
+    } else {
+      $('recNote').innerHTML = '正在补填：新记录会记入 <b>' + dateLabel(recDate) + '</b>，<b>不会算进今天</b>。';
+    }
+    var short = recDate === t
+      ? '记入 ' + dateLabel(recDate) + '（今天）'
+      : '补记到 ' + dateLabel(recDate) + '，不计入今天';
+    $('waterNote').textContent = short;
+    $('exNote').textContent = short;
+  }
+
+  /* ================= 渲染：历史记录 ================= */
+  function timelineHtml(water, exs) {
+    var items = [];
+    water.forEach(function (r) { items.push({ ts: r.ts || '', kind: 'w', r: r }); });
+    exs.forEach(function (e) {
+      e.recs.forEach(function (r) { items.push({ ts: r.ts || '', kind: 'e', s: e.s, r: r }); });
+    });
+    items.sort(function (a, b) { return String(a.ts).localeCompare(String(b.ts)); });
+    if (!items.length) return '<div class="empty">暂无记录</div>';
+    return '<ul class="tl">' + items.map(function (it) {
+      if (it.kind === 'w') {
+        return '<li>' +
+          '<span class="t">' + esc(it.ts) + '</span>' +
+          '<span class="ic">💧</span>' +
+          '<span class="d">饮水 ' + fmtNum(it.r.ml) + ' ml</span>' +
+          (it.r.dirty ? '<span class="pend" title="还没存上云端">待同步</span>' : '') +
+          '<button class="undo" type="button" data-water="' + esc(it.r.id) + '" aria-label="撤销这条记录">×</button>' +
+          '</li>';
+      }
+      var s = it.s;
+      var detail = s.mode === 'km'
+        ? fmtNum(it.r.km) + ' 公里 · ' + fmtNum(it.r.min) + ' 分钟'
+        : fmtNum(it.r.min) + ' 分钟';
+      if (s.key === '跑步' && +it.r.km > 0) detail += ' · 配速 ' + fmtPace(+it.r.min, +it.r.km);
+      return '<li>' +
+        '<span class="t">' + esc(it.ts) + '</span>' +
+        '<span class="dot" style="background:' + colorOf(s.key) + '"></span>' +
+        '<span class="d">' + s.emoji + ' ' + esc(s.key) + ' · ' + esc(detail) + '</span>' +
+        (it.r.dirty ? '<span class="pend" title="还没存上云端">待同步</span>' : '') +
+        '<button class="undo" type="button" data-workout="' + esc(s.key) + '" data-id="' + esc(it.r.id) + '" aria-label="撤销这条记录">×</button>' +
+        '</li>';
+    }).join('') + '</ul>';
+  }
+
+  function renderHistory() {
+    var d = viewDate;
+    var t = todayStr();
+    $('histDate').value = d;
+    $('histDate').max = t;
+    var rel = relDay(d);
+    $('histDateTag').textContent = rel ? (rel + ' · ' + dateShort(d)) : dateShort(d);
+    $('histNext').disabled = (d >= t);
+
+    var water = waterOn(d);
+    var exs = [];
+    SPORTS.forEach(function (s) {
+      var recs = workoutsOn(d, s.key);
+      if (recs.length) exs.push({ s: s, recs: recs });
+    });
+
+    var html = '';
+
+    if (!water.length && !exs.length) {
+      html += '<div class="hist-empty"><span>🗓️</span>暂无记录</div>';
+    } else {
+      var totalMl = 0, exCount = 0, totalMin = 0;
+      water.forEach(function (r) { totalMl += (+r.ml || 0); });
+      exs.forEach(function (e) {
+        exCount += e.recs.length;
+        e.recs.forEach(function (r) { totalMin += (+r.min || 0); });
+      });
+      html += '<div class="hsum">' +
+        '<div><label>饮水合计</label><b>' + fmtNum(totalMl) + ' ml</b></div>' +
+        '<div><label>饮水次数</label><b>' + water.length + ' 次</b></div>' +
+        '<div><label>运动合计</label><b>' + exCount + ' 次</b></div>' +
+        '<div><label>运动时长</label><b>' + fmtNum(totalMin) + ' 分钟</b></div>' +
+        '</div>';
+
+      if (exs.length) {
+        html += '<div class="sub-title">当日运动</div>';
+        html += exs.map(function (e) {
+          var km = 0, min = 0;
+          e.recs.forEach(function (r) { km += (+r.km || 0); min += (+r.min || 0); });
+          var val = e.s.mode === 'km'
+            ? fmtNum(km) + ' 公里 · ' + fmtNum(min) + ' 分钟'
+            : fmtNum(min) + ' 分钟';
+          return '<div class="sum-row">' +
+            '<span class="dot" style="background:' + colorOf(e.s.key) + '"></span>' +
+            '<span class="nm">' + e.s.emoji + ' ' + esc(e.s.key) + '</span>' +
+            '<span class="vv">' + esc(val) + ' · ' + e.recs.length + ' 次</span>' +
+          '</div>';
+        }).join('');
+      }
+
+      html += '<div class="sub-title">每次记录</div>';
+      html += timelineHtml(water, exs);
+    }
+
+    // 早期没有日期的旧记录：原样保留，单列出来，不丢数量
+    var uw = undatedWater(), ue = [];
+    SPORTS.forEach(function (s) {
+      var recs = undatedWorkouts(s.key);
+      if (recs.length) ue.push({ s: s, recs: recs });
+    });
+    if (uw.length || ue.length) {
+      html += '<div class="sub-title">未指定日期的旧记录</div>';
+      html += timelineHtml(uw, ue);
+    }
+
+    // 补填入口：把「记录日期」切到正在看的这一天
+    if (d !== t) {
+      html += '<div class="hist-fill"><button class="chip" type="button" data-fill="' + d + '">＋ 补记到 ' + dateLabel(d) + '</button></div>';
+    }
+
+    $('histBody').innerHTML = html;
+  }
+
+  /* ================= 总渲染 ================= */
+  function render() {
+    renderTop();
+    renderWater();
+    renderTabs();
+    renderPanels();
+    renderExSummary();
+    renderRecDate();
+    renderHistory();
+    buildCard();
+  }
+
+  /* ================= 事件 ================= */
+  $('btnAddWater').addEventListener('click', function () {
+    state.water.push({ id: uid(), date: recDate, ts: nowTime(), ml: CUP, u: Date.now(), dirty: 1 });
+    save(); render();
+    syncCommit(recDate === todayStr() ? '已记录 250 ml' : ('已补记 250 ml 到 ' + dateShort(recDate)));
+  });
+
+  $('tabs').addEventListener('click', function (e) {
+    var t = e.target.closest('[data-tab]');
+    if (!t) return;
+    currentSport = t.getAttribute('data-tab');
+    renderTabs();
+    renderPanels();
+  });
+
+  $('panels').addEventListener('click', function (e) {
+    var add = e.target.closest('[data-add]');
+    if (add) {
+      var key = add.getAttribute('data-add');
+      var panel = add.closest('.panel');
+      var sp = sportOf(key);
+      var kmEl = panel.querySelector('[data-in="km"]');
+      var minEl = panel.querySelector('[data-in="min"]');
+      var min = parseFloat(minEl.value);
+      var km = kmEl ? parseFloat(kmEl.value) : 0;
+
+      if (sp.mode === 'km') {
+        if (!isFinite(km) || km <= 0) { toast('请填写距离（公里）'); kmEl.focus(); return; }
+        if (!isFinite(min) || min <= 0) { toast('请填写时长（分钟）'); minEl.focus(); return; }
+      } else {
+        if (!isFinite(min) || min <= 0) { toast('请填写时长（分钟）'); minEl.focus(); return; }
+        km = 0;
+      }
+      state.workouts[key].push({ id: uid(), date: recDate, ts: nowTime(), km: km, min: min, u: Date.now(), dirty: 1 });
+      save(); render();
+      syncCommit(recDate === todayStr()
+        ? ('已记录 ' + key + ' ' + fmtNum(min) + ' 分钟')
+        : ('已补记 ' + key + ' ' + fmtNum(min) + ' 分钟到 ' + dateShort(recDate)));
+      return;
+    }
+
+    var undo = e.target.closest('[data-workout]');
+    if (undo) {
+      var k = undo.getAttribute('data-workout');
+      var id = undo.getAttribute('data-id');
+      var rec = findWorkout(k, id);
+      state.workouts[k] = state.workouts[k].filter(function (r) { return r.id !== id; });
+      addTomb('x:' + k + ':' + id, nextVersion(rec && rec.u));
+      save(); render();
+      syncCommit('已撤销该条记录');
+    }
+  });
+
+  // 输入框回车即可记录
+  $('panels').addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var btn = e.target.closest('.panel') && e.target.closest('.panel').querySelector('[data-add]');
+    if (btn) btn.click();
+  });
+
+  document.addEventListener('click', function (e) {
+    var wu = e.target.closest('[data-water]');
+    if (wu) {
+      var wid = wu.getAttribute('data-water');
+      var wrec = findWater(wid);
+      state.water = state.water.filter(function (r) { return r.id !== wid; });
+      addTomb('w:' + wid, nextVersion(wrec && wrec.u));
+      save(); render();
+      syncCommit('已撤销该条记录');
+    }
+  });
+
+  /* ---------- 记录日期：新记录记到哪一天 ---------- */
+  $('recDate').addEventListener('change', function () {
+    var v = this.value, t = todayStr();
+    if (!isDateStr(v)) { recDate = t; renderRecDate(); return; }
+    if (v > t) { recDate = t; renderRecDate(); toast('不能记到未来的日期'); return; }
+    recDate = v;
+    renderRecDate();
+    toast('新记录将记入 ' + dateLabel(v));
+  });
+  $('recToday').addEventListener('click', function () {
+    recDate = todayStr();
+    renderRecDate();
+    toast('已切回今天');
+  });
+
+  /* ---------- 历史记录：查看某一天 ---------- */
+  $('histDate').addEventListener('change', function () {
+    var v = this.value, t = todayStr();
+    if (!isDateStr(v)) { viewDate = t; renderHistory(); return; }
+    if (v > t) { viewDate = t; renderHistory(); toast('不能查看未来的日期'); return; }
+    viewDate = v;
+    renderHistory();
+  });
+  $('histPrev').addEventListener('click', function () {
+    viewDate = shiftDate(viewDate, -1);
+    renderHistory();
+  });
+  $('histNext').addEventListener('click', function () {
+    var n = shiftDate(viewDate, 1);
+    if (n > todayStr()) return;
+    viewDate = n;
+    renderHistory();
+  });
+  $('histToday').addEventListener('click', function () {
+    viewDate = todayStr();
+    renderHistory();
+  });
+  $('histBody').addEventListener('click', function (e) {
+    var fill = e.target.closest('[data-fill]');
+    if (fill) {
+      recDate = fill.getAttribute('data-fill');
+      renderRecDate();
+      toast('记录日期已切到 ' + dateLabel(recDate) + '，新记录会记到该日');
+      var bar = document.querySelector('.datebar');
+      if (bar && bar.scrollIntoView) bar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    var wo = e.target.closest('[data-workout]');
+    if (wo) {
+      var k = wo.getAttribute('data-workout');
+      var id = wo.getAttribute('data-id');
+      if (!state.workouts[k]) return;
+      var hrec = findWorkout(k, id);
+      state.workouts[k] = state.workouts[k].filter(function (r) { return r.id !== id; });
+      addTomb('x:' + k + ':' + id, nextVersion(hrec && hrec.u));
+      save(); render();
+      syncCommit('已撤销该条记录');
+    }
+  });
+
+  /* ---------- 昵称编辑 ---------- */
+  var mask = $('mask'), nickInput = $('nickInput');
+  function openNick() {
+    nickInput.value = state.nickname;
+    mask.hidden = false;
+    setTimeout(function () { nickInput.focus(); nickInput.select(); }, 30);
+  }
+  function closeNick() { mask.hidden = true; }
+  $('btnEditNick').addEventListener('click', openNick);
+  $('btnCancelNick').addEventListener('click', closeNick);
+  mask.addEventListener('click', function (e) { if (e.target === mask) closeNick(); });
+  $('btnSaveNick').addEventListener('click', function () {
+    var v = nickInput.value.trim();
+    if (!v) { toast('昵称不能为空'); return; }
+    state.nickname = v;
+    state.meta.nick = { v: v, u: nextVersion(state.meta.nick.u), dirty: 1 };
+    save(); render();
+    closeNick();
+    syncCommit('昵称已更新');
+  });
+  nickInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') $('btnSaveNick').click(); });
+
+  /* ---------- 保存图片 ---------- */
+  $('btnSaveImg').addEventListener('click', function () {
+    if (!cardDataUrl) return;
+    var a = document.createElement('a');
+    a.href = cardDataUrl;
+    a.download = '我的健康记录-' + todayStr() + '.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    toast('图片已保存；手机上也可长按图片保存');
+  });
+
+  /* ---------- 云端同步 ---------- */
+  $('btnGenCode').addEventListener('click', function () {
+    var old = (sync.code || '').trim();
+    if (old) {
+      // 换码 = 切到一份全新的空记录集。两台各点一次「生成同步码」是最常见的翻车方式，
+      // 而且当时两边都显示「已同步」，谁也看不出来。所以这里必须先确认。
+      var go = window.confirm(
+        '你当前在用记录集 ' + (sync.setId || '?') + '。\n\n' +
+        '生成新的同步码会切到一份**全新的空记录集**，另一台设备将看不到这里的记录，' +
+        '这里已有的记录也不会跟过去。\n\n' +
+        '（如果只是想让另一台设备共用同一份记录，请用「复制同步码」把它贴到另一台。）\n\n' +
+        '确定要生成新的同步码吗？');
+      if (!go) { toast('已取消：仍在使用记录集 ' + (sync.setId || '?')); return; }
+    }
+    var code = genSyncCode();
+    $('syncCode').value = code;
+    sync.code = code;
+    sync.key = sha256hex(code);
+    sync.setId = setIdOf(code);
+    saveSyncCfg();
+    renderSetId();
+    setSyncStatus('off', '已生成新的记录集 ' + sync.setId + '：复制同步码贴到另一台设备，两台编号一致才是同一份记录。');
+    toast('已生成同步码（记录集 ' + sync.setId + '）：用「复制同步码」贴到另一台设备');
+  });
+  $('btnCopyCode').addEventListener('click', function () {
+    var inp = $('syncCode');
+    var code = (inp.value || '').trim();
+    if (!code) { toast('还没有同步码'); return; }
+    var done = function () {
+      toast('同步码已复制 —— 贴到另一台设备的「同步码」框。两台填的是同一串，才是同一份记录（编号 ' +
+            (sync.setId || setIdOf(code)) + '）。');
+    };
+    // 剪贴板不可用时（非 https / 非本机地址）：临时切成明文并选中，交给用户手动复制
+    var manualCopy = function () {
+      var wasPwd = inp.type === 'password';
+      inp.type = 'text';
+      inp.focus(); inp.select();
+      toast('请手动复制（已选中同步码）');
+      if (wasPwd) setTimeout(function () { inp.type = 'password'; }, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(done, manualCopy);
+    } else {
+      manualCopy();
+    }
+  });
+  // 同步码等同密码，默认以掩码显示
+  $('btnShowCode').addEventListener('click', function () {
+    var inp = $('syncCode');
+    var show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    this.textContent = show ? '隐藏' : '显示';
+  });
+  // 同步码一改动就实时显示它对应的记录集编号：方便把两台的编号对一下
+  $('syncCode').addEventListener('input', function () {
+    var id = setIdOf((this.value || '').trim());
+    var el = $('syncSetId');
+    el.textContent = id || '未设置（填入同步码后才有）';
+    el.className = 'setid-val' + (id ? '' : ' off');
+  });
+  $('btnConnect').addEventListener('click', function () { connectCloud(false); });
+  $('btnRefresh').addEventListener('click', function () { syncPull(true); });
+  $('btnPush').addEventListener('click', function () {
+    if (!sync.connected) { toast('尚未连接云端：先填服务地址与同步码，点「连接云端」'); return; }
+    pushNow().then(function (ok) {
+      if (ok) { setSyncStatus('ok', '已同步 · ' + nowTime()); toast('已同步到云端'); }
+      else toast('同步失败：' + sync.lastErr);
+    });
+  });
+  $('btnDisconnect').addEventListener('click', disconnectCloud);
+
+  /* ---------- 跨天自动刷新 ---------- */
+  var lastDay = todayStr();
+  function checkDay() {
+    var d = todayStr();
+    if (d === lastDay) return;
+    var oldDay = lastDay;
+    lastDay = d;
+    if (recDate === oldDay) recDate = d;    // 默认记录日期跟随新的一天
+    if (viewDate === oldDay) viewDate = d;  // 正在看的那天若是昨天，自动跟随
+    render();
+  }
+  setInterval(checkDay, 30000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) checkDay(); });
+
+  /* ================= 启动 ================= */
+  load();
+  loadSyncCfg();
+  render();
+  setSyncStatus('off', sync.code ? '已保存同步码，填好服务地址后点「连接云端」。' : '未连接云端：记录只保存在本机浏览器。');
+
+  // 已连接过就自动续连并拉取一次（打开页面就能看到另一台的记录）
+  // 静默模式：失败只更新状态行，不弹提示打扰
+  if (sync.api && sync.code) {
+    connectCloud(true);
+  }
+})();
+</script>
+</body>
+</html>
